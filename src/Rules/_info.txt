@@ -1,0 +1,9 @@
+This package is used to store set of rules and conventions for both Server and Client, assuming they don't know anything about each other's code.
+Rules include, but not limited to:
+- Constant
+- Code conventions
+- Functions & methods signatures
+- ...
+
+Referrences:
+- https://www.baeldung.com/java-constants-good-practices
