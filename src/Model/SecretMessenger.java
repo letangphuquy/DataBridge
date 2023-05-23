@@ -1,5 +1,6 @@
 package Model;
 
+import java.io.PrintStream;
 import java.security.InvalidAlgorithmParameterException;
 import java.security.InvalidKeyException;
 import java.security.KeyFactory;
@@ -31,16 +32,17 @@ public class SecretMessenger {
     private KeyPair keypair;
     private SecretKeySpec sharedSecret;
     private Cipher cipher;
+    private PrintStream debugger = System.out;
     
     public SecretMessenger() {
         try {
             cipher = Cipher.getInstance(SYMMETRIC_ALGORITHM);
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Error in creation of Cipher object: no such algorithm");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (NoSuchPaddingException e) {
             System.out.println("Error in creation of Cipher object: no such padding");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         }
 
         KeyPairGenerator generator;
@@ -50,10 +52,10 @@ public class SecretMessenger {
             keypair = generator.generateKeyPair();
         } catch (NoSuchAlgorithmException e) {
             System.out.println("Error generating key pair: no such algorithm");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (InvalidAlgorithmParameterException e) {
             System.out.println("Error generating key pair: invalid algorithm parameter");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         }
     }
 
@@ -76,13 +78,13 @@ public class SecretMessenger {
             return cipher.doFinal(data);
         } catch (InvalidKeyException e) {
             System.out.println("Error encrypting data, in initialization of Cipher object: invalid key");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (IllegalBlockSizeException e) {
             System.out.println("Error encrypting data: illegal block size");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (BadPaddingException e) {
             System.out.println("Error encrypting data: bad padding");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         }
         return null;
     }
@@ -97,18 +99,22 @@ public class SecretMessenger {
             return cipher.doFinal(data);
         } catch (InvalidKeyException e) {
             System.out.println("Error decrypting data, in initialization of Cipher object: invalid key");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (IllegalBlockSizeException e) {
             System.out.println("Error decrypting data: illegal block size");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         } catch (BadPaddingException e) {
             System.out.println("Error decrypting data: bad padding");
-            e.printStackTrace();
+            e.printStackTrace(debugger);
         }
         return null;
     }
 
     public String decrypt(String data) {
         return new String(decrypt(TypesConverter.stringToBytes(data)));
+    }
+
+    public void setDebugger(PrintStream debugger) {
+        this.debugger = debugger;
     }
 }

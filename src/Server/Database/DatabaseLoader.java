@@ -62,9 +62,13 @@ public class DatabaseLoader {
         int numColumns = loadDatabase("Users");
         String[] args = new String[numColumns];
         while (result.next()) {
-            for (int i = 0; i < numColumns; i++)
+            for (int i = 0; i < numColumns; i++) 
                 args[i] = result.getString(i+1);
+            for (int i = 0; i < numColumns; i++) 
+                System.out.print(args[i] + " ");
+            System.out.println();
             User user = new User(args);
+            System.out.println("User " + user);
             Data.users.put(user.getUserID(), user);
             Data.usernameToID.put(user.getUsername(), user.getUserID());
         }
@@ -72,8 +76,13 @@ public class DatabaseLoader {
         args = new String[numColumns];
         while (result.next()) {
             for (int i = 0; i < numColumns; i++)
-                args[i] = result.getString(i+1);
+            args[i] = result.getString(i+1);
             Data.passwordOf.put(args[0], new Password(args[0], args[1], args[2]));
+        }
+        System.out.println("LOAD database:\nUsers: " + Data.users.size() + " users");
+        System.out.println("Passwords: " + Data.passwordOf.size() + " passwords");
+        for (var entry : Data.passwordOf.entrySet()) {
+            System.out.println(entry.getKey() + ":" + entry.getValue() + ".");
         }
     }
 }

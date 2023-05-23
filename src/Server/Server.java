@@ -21,7 +21,7 @@ public class Server {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
             System.out.println("Server is listening on port " + PORT);
             while (true) {
-                new ServerThread(serverSocket.accept()).start();
+                new Thread(new ServerThread(serverSocket.accept())).start();
             }
         } catch (IOException e) {
             System.out.println("Error: ServerSocket couldn't be created OR could not accept client connection");

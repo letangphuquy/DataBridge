@@ -13,18 +13,21 @@ CREATE TABLE Recipients
 CREATE TABLE Users
 (
 	user_id CHAR(30) PRIMARY KEY REFERENCES Recipients(receiver_id) NOT NULL,
-	username CHAR(30) UNIQUE NOT NULL,
+	username VARCHAR(30) UNIQUE NOT NULL,
 	profile NVARCHAR(3000),
-	is_banned BINARY(1) NOT NULL,
-	is_private BINARY(1) NOT NULL,
+	is_banned BINARY NOT NULL,
+	is_private BINARY NOT NULL,
 	reputation INT
 )
 
+-- ALTER TABLE Users ALTER COLUMN username VARCHAR(30) NOT NULL
+-- ALTER TABLE Users ADD CONSTRAINT UniqueUsername UNIQUE(username)
+
 CREATE TABLE Passwords
 (
-	username CHAR(30) PRIMARY KEY REFERENCES Users(username),
-	salt CHAR(16) NOT NULL,
-	hashed_password CHAR(256) NOT NULL
+	username VARCHAR(30) PRIMARY KEY REFERENCES Users(username),
+	salt CHAR(32) NOT NULL,
+	hashed_password CHAR(64) NOT NULL
 )
 
 CREATE TABLE Friendship
@@ -106,3 +109,21 @@ CREATE TABLE FileLinks
 	message_id INT IDENTITY(1,1) PRIMARY KEY REFERENCES Messages(message_id) NOT NULL,
 	file_id CHAR(30) REFERENCES Files(file_id) NOT NULL
 )
+
+INSERT INTO Recipients VALUES(1,'U')
+INSERT INTO Users VALUES(1, 'test', 'I am Groot', 0, 0, 0)
+INSERT INTO Passwords VALUES('test', 'salt', 'hashed_password')
+
+-- DROP TABLE FileLinks
+-- DROP TABLE NormalMessages
+-- DROP TABLE Messages
+-- DROP TABLE Comments
+-- DROP TABLE Votes
+-- DROP TABLE Containing
+-- DROP TABLE Files
+-- DROP TABLE GroupMembership
+-- DROP TABLE Groups
+-- DROP TABLE Friendship
+-- DROP TABLE Passwords
+-- DROP TABLE Users
+-- DROP TABLE Recipients

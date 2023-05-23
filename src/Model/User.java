@@ -18,6 +18,7 @@ public class User extends Recipient {
 	public User(String[] data) {
 		super('U');
 		// data[0] is recipientID/ userID
+		super.setRecipientID(data[0]);
 		this.username = data[1];
 		this.profile = data[2];
 		this.isBanned = Boolean.parseBoolean(data[3]);
@@ -69,5 +70,8 @@ public class User extends Recipient {
 		this.username = username;
 	}
     
-    
+    @Override
+	public String toString() {
+		return getUserID() + " " + username + " " + profile + " " + isBanned + " " + isPrivate + " " + reputation;
+	}
 }
