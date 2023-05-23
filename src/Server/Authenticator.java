@@ -10,8 +10,8 @@ public class Authenticator {
     private static ServerCode register(String username, String hashedPassword) {
         return ServerCode.REJECT;
     }
-    public static ServerCode process(int command, String[] params) {
-        switch (ClientCode.Command.values()[command]) {
+    public static ServerCode process(ClientCode.Command command, String[] params) {
+        switch (command) {
             case LOGIN:
                 return login(params[0], params[1]);
             case REGISTER:

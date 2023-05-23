@@ -5,5 +5,7 @@ Rules include, but not limited to:
 - Functions & methods signatures
 - ...
 
+Models are used by both Client and Server
+
 Referrences:
 - https://www.baeldung.com/java-constants-good-practices

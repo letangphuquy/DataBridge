@@ -4,12 +4,14 @@ package Rules;
  * ClientCode: 
  * Rules for communication from client to server (via sockets) (aka. requests)
  * TYPE <space> COMMAND <space> DATA
+ * Special case: [TYPE=KEY] <space> DATA
  */
 
 public final class ClientCode {
     private ClientCode() {}
 
     public enum Type {
+        KEY,
         AUTH, USER, FILE, CHAT
     }
     
@@ -23,6 +25,7 @@ public final class ClientCode {
 
     /*
      * List of all possible commands:
+     * KEY <_> p^a (or p^b) mod n
      * AUTH <_> REGISTER, LOGIN <_> USERNAME <_> HASHED_PASSWORD
      * AUTH <_> LOGOUT
      * USER <_> FRIEND <_> USERNAME <_> STATUS (-1,0,1)

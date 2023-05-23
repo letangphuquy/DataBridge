@@ -11,7 +11,6 @@ import Model.User;
  */
 
 public class Data {
-    public static int data = 0;
     public static HashMap<String,String> usernameToID = new HashMap<String,String>();
     public static HashMap<String,User> users = new HashMap<String,User>();
     public static HashMap<String,Password> passwordOf = new HashMap<String,Password>();
