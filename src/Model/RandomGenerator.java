@@ -6,7 +6,7 @@ import java.security.SecureRandom;
 public class RandomGenerator {
     private static int SALT_LENGTH = 16;
     public static String randomString(int length) {
-        int leftLimit = 32;
+        int leftLimit = 33; // exlude space
         int rightLimit = 126;
         StringBuilder sb = new StringBuilder(length);
         for (int i = 0; i < length; i++) {

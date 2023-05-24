@@ -52,12 +52,9 @@ public class Client extends E2ESocket {
         } catch (IOException e) {
             System.out.println("Error logging in " + debugger.toString());
             debug(e);
+        } finally {
+            debugger.close();
         }
-    }
-    
-    protected void closeAll() throws IOException {
-        super.closeAll();
-        debugger.close();
     }
     
     public static void main(String[] args) {

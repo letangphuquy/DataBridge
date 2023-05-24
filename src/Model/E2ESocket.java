@@ -26,6 +26,7 @@ public class E2ESocket {
 
     protected E2ESocket(Socket socket, boolean sendFirst) {
         assert socket != null;
+        this.socket = socket;
         System.out.println("Connected to " + socket.getInetAddress());
         try {
             in = new BufferedReader(new InputStreamReader(socket.getInputStream()));

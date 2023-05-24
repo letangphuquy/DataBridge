@@ -1,6 +1,11 @@
 package Model;
 
+import Rules.Constants;
+
 public class User extends Recipient {
+    /**
+     * username: unique, max 30 characters, NOT contain SPACE
+     */
     private String username;
     private String profile;
     private boolean isBanned, isPrivate;
@@ -17,6 +22,7 @@ public class User extends Recipient {
 
 	public User(String[] data) {
 		super('U');
+		System.out.println("User data: " + String.join(Constants.DELIMITER, data));
 		// data[0] is recipientID/ userID
 		super.setRecipientID(data[0]);
 		this.username = data[1];
@@ -72,6 +78,6 @@ public class User extends Recipient {
     
     @Override
 	public String toString() {
-		return getUserID() + " " + username + " " + profile + " " + isBanned + " " + isPrivate + " " + reputation;
+		return String.join(Constants.DELIMITER, getUserID(), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
 	}
 }
