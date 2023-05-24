@@ -13,6 +13,6 @@ public class Password {
     }
     //testing purposes
     public String toString() {
-        return username + " " + salt + " " + hashedPassword + ".";
+        return username + " " + salt + " " + hashedPassword;
     }
 }

@@ -14,7 +14,7 @@ public class Server {
         try {
             DatabaseLoader.loadAll();
         } catch (SQLException e) {
-            System.out.println("Error loading database's tables");
+            System.out.println("Error reading tables from database");
             e.printStackTrace();
         }
         final int PORT = HostAddress.PORT;

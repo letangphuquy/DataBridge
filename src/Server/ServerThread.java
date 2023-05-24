@@ -27,7 +27,7 @@ public class ServerThread extends E2ESocket implements Runnable {
                 switch (ClientCode.Type.valueOf(type)) {
                     case AUTH:
                         user = Authenticator.process(this, command, parts);
-                        System.out.println("User: " + user);
+                        System.out.println("Query result: " + user);
                         break;
                     case USER:
                         break;

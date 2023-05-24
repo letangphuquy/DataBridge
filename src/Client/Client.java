@@ -47,10 +47,15 @@ public class Client extends E2ESocket {
     private void run() {
         // new Thread(() -> listenToServer()).start();
         try {
-            user = Authenticator.login("test", "1");
+            user = Authenticator.login("test2", "1");
+            System.out.println("Logged in: " + user);
+            user = Authenticator.register("test2", "1");
+            System.out.println("Registered: " + user);
+            user = Authenticator.login("test2", "1");
+            System.out.println("Logged in: " + user);
             closeAll();
         } catch (IOException e) {
-            System.out.println("Error logging in " + debugger.toString());
+            System.out.println("Error login-ing");
             debug(e);
         } finally {
             debugger.close();
