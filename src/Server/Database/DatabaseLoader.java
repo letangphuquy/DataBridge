@@ -22,6 +22,8 @@ public class DatabaseLoader {
             ResultSet resultSet = statement.executeQuery(command);
 
             ResultSetMetaData metadata = resultSet.getMetaData();
+            if (!Data.metadataOf.containsKey(tableName))
+                Data.metadataOf.put(tableName, metadata);
     		int numColumns = metadata.getColumnCount();
             
             while (resultSet.next()) {

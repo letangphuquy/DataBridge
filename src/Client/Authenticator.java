@@ -22,6 +22,13 @@ public class Authenticator {
         return true;
     }
 
+    /*
+     * Login procedure:
+     * 1. Send username
+     * 2. Receive salt
+     * 3. Send hashed password
+     * 4. Receive user data
+     */
     public static User login(String username, String password) throws IOException {
         Client client = Client.instance;
         client.send(ClientCode.Type.AUTH + " " + ClientCode.Command.LOGIN + " " + username);
@@ -46,6 +53,9 @@ public class Authenticator {
         return new User(parts);
     }
 
+    /*
+     * Register procedure: more or less the same as login
+     */
     public static User register(String username, String password) throws IOException {
         Client client = Client.instance;
         client.send(ClientCode.Type.AUTH + " " + ClientCode.Command.REGISTER + " " + username);

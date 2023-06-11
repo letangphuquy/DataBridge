@@ -5,6 +5,7 @@ import Rules.Constants;
 public class User extends Recipient {
     /**
      * username: unique, max 30 characters, NOT contain SPACE
+	 * name: reserved in first 60 characters of profile (too lazy to drop whole database and redesign)
      */
     private String username;
     private String profile;
@@ -14,7 +15,7 @@ public class User extends Recipient {
     public User(String username) {
 		super('U');
         this.username = username;
-        this.profile = "";
+        this.profile = " ".repeat(Constants.NAME_MAX_LENGTH);
         this.isBanned = false;
         this.isPrivate = true;
         this.reputation = 0;
@@ -22,7 +23,7 @@ public class User extends Recipient {
 
 	public User(String[] data) {
 		super('U');
-		System.out.println("User data: " + String.join(Constants.DELIMITER, data));
+		// System.out.println("User data: " + String.join(Constants.DELIMITER, data));
 		// data[0] is recipientID/ userID
 		super.setRecipientID(data[0]);
 		this.username = data[1];
@@ -76,8 +77,20 @@ public class User extends Recipient {
 		this.username = username;
 	}
     
+	public String getName() {
+		return profile.substring(0, Math.min(profile.length(), Constants.NAME_MAX_LENGTH)).trim();
+	}
+
     @Override
 	public String toString() {
 		return String.join(Constants.DELIMITER, getUserID(), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
+	}
+
+	public Object[] toObjectArray() {
+		return new Object[] {getUserID(), username, profile, isBanned, isPrivate, reputation};
+	}
+
+	public Recipient toRecipient() {
+		return new Recipient(getRecipientID(), getType());
 	}
 }

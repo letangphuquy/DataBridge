@@ -11,8 +11,7 @@ public class Password {
     public boolean verify(String password) {
         return hashedPassword.equals(password);
     }
-    //testing purposes
-    public String toString() {
-        return username + " " + salt + " " + hashedPassword;
+    public Object[] toObjectArray() {
+        return new Object[] {username, salt, hashedPassword};
     }
 }

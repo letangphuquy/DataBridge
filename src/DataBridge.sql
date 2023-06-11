@@ -57,18 +57,12 @@ CREATE TABLE Files
 (
 	file_id CHAR(30) PRIMARY KEY NOT NULL,
 	uploader CHAR(30) REFERENCES Users(user_id) NOT NULL,
-	filepath NVARCHAR(300) NOT NULL,
+	parent_id CHAR(30) NOT NULL,
 	filename NVARCHAR(80) NOT NULL,
 	notes NVARCHAR(100),
 	is_folder BINARY(1) NOT NULL,
 	is_public BINARY(1) DEFAULT(0) NOT NULL,
-)
-
-CREATE TABLE Containing
-(
-	parent CHAR(30) REFERENCES Files(file_id) NOT NULL,
-	child CHAR(30) REFERENCES Files(file_id) NOT NULL,
-	PRIMARY KEY(parent, child)
+	created_at DATETIME NOT NULL,
 )
 
 CREATE TABLE Votes

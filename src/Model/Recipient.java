@@ -9,6 +9,11 @@ public class Recipient {
 		recipientID = null;
         this.type = type;
     }
+	Recipient(String recipientID, char type) {
+		this.recipientID = recipientID;
+		this.type = type;
+	}
+	
 	public String getRecipientID() {
 		return recipientID;
 	}
@@ -17,5 +22,9 @@ public class Recipient {
 	}
 	public char getType() {
 		return type;
+	}
+
+	public Object[] toObjectArray() {
+		return new Object[] {recipientID, type};
 	}
 }

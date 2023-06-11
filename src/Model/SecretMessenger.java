@@ -72,7 +72,7 @@ public class SecretMessenger {
         sharedSecret = new SecretKeySpec(keyAgreement.generateSecret(), SYMMETRIC_ALGORITHM);
     }
 
-    public byte[] encrypt(byte[] data) {
+    private byte[] encrypt(byte[] data) {
         try {
             cipher.init(Cipher.ENCRYPT_MODE, sharedSecret);
             return cipher.doFinal(data);
@@ -89,11 +89,15 @@ public class SecretMessenger {
         return null;
     }
 
-    public String encrypt(String data) {
-        return TypesConverter.bytesToString(encrypt(data.getBytes()));
+    public String encryptBytes(byte[] data) {
+        return TypesConverter.bytesToString(encrypt(data));
     }
 
-    public byte[] decrypt(byte[] data) {
+    public String encryptStr(String data) {
+        return encryptBytes(data.getBytes());
+    }
+
+    private byte[] decrypt(byte[] data) {
         try {
             cipher.init(Cipher.DECRYPT_MODE, sharedSecret);
             return cipher.doFinal(data);
@@ -110,8 +114,12 @@ public class SecretMessenger {
         return null;
     }
 
-    public String decrypt(String data) {
-        return new String(decrypt(TypesConverter.stringToBytes(data)));
+    public byte[] decryptBytes(String data) {
+        return decrypt(TypesConverter.stringToBytes(data));
+    }
+        
+    public String decryptStr(String data) {
+        return new String(decryptBytes(data));
     }
 
     public void setDebugger(PrintStream debugger) {

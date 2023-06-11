@@ -18,7 +18,7 @@ public class ServerThread extends E2ESocket implements Runnable {
             String msg;
             while ((msg = in.readLine()) != null) {
                 System.out.println("Received: " + msg);
-                msg = secretMessenger.decrypt(msg);
+                msg = secretMessenger.decryptStr(msg);
                 System.out.println("Decrypted: " + msg);
                 String[] parts = msg.split(" ");
                 String type = parts[0];
@@ -32,6 +32,7 @@ public class ServerThread extends E2ESocket implements Runnable {
                     case USER:
                         break;
                     case FILE:
+                        FileProcessor.process(this, command, parts);
                         break;
                     case CHAT:
                         break;

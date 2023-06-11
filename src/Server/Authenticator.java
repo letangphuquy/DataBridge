@@ -11,6 +11,13 @@ import Server.Database.Data;
 import Server.Database.DatabaseUpdater;
 public class Authenticator {
     private Authenticator() {}
+    /*
+     * Login procedure:
+     * 1. Check for sent username's existence
+     * 2. Send salt
+     * 3. Receive hashed password, verify
+     * 4. Send user data (if success)
+     */
     private static User login(ServerThread server, String username) throws IOException {
         //Read "AUTH LOGIN <username>" and triggered by ServerThread
         String userID = Data.usernameToID.get(username);
@@ -30,7 +37,9 @@ public class Authenticator {
         server.send(user.toString());
         return user;
     }
-
+    /*
+     * Register procedure: more or less the same as login
+     */
     private static User register(ServerThread server, String username) throws IOException {
         //Read "AUTH REGISTER <username>" and triggered by ServerThread
         String userID = Data.usernameToID.get(username);
@@ -47,7 +56,7 @@ public class Authenticator {
         User user = new User(username);
         String recipientID = null;
         do {
-            recipientID = RandomGenerator.randomString(Constants.RECIPIENT_ID_LENGTH);
+            recipientID = RandomGenerator.randomReadableString(Constants.RECIPIENT_ID_LENGTH);
         } while (Data.allIDs.contains(recipientID));
         user.setRecipientID(recipientID);
         DatabaseUpdater.addUser(user, password);

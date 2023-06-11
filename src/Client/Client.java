@@ -30,7 +30,7 @@ public class Client extends E2ESocket {
             while (user == null);
             while ((msg = in.readLine()) != null) {
                 System.out.println("Received: " + msg);
-                msg = secretMessenger.decrypt(msg);
+                msg = secretMessenger.decryptStr(msg);
                 System.out.println("Decrypted: " + msg);
                 String[] parts = msg.split(" ");
                 switch (ServerCode.valueOf(parts[0])) {
@@ -53,6 +53,7 @@ public class Client extends E2ESocket {
             System.out.println("Registered: " + user);
             user = Authenticator.login("test2", "1");
             System.out.println("Logged in: " + user);
+            FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", ".");
             closeAll();
         } catch (IOException e) {
             System.out.println("Error login-ing");

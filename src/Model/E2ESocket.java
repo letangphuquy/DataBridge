@@ -15,7 +15,7 @@ public class E2ESocket {
     private Socket socket;
     protected BufferedReader in;
     protected BufferedWriter out;
-    protected User user = null;
+    public User user = null;
     
     /*
      * Constructor's requirements:
@@ -65,7 +65,11 @@ public class E2ESocket {
     }
 
     public void send(String msg) throws IOException {
-        sendPlain(secretMessenger.encrypt(msg));
+        sendPlain(secretMessenger.encryptStr(msg));
+    }
+
+    public void sendBytes(byte[] msg) throws IOException {
+        sendPlain(secretMessenger.encryptBytes(msg));
     }
 
     protected String readPlain() throws IOException {
@@ -73,7 +77,11 @@ public class E2ESocket {
     }
 
     public String read() throws IOException {
-        return secretMessenger.decrypt(readPlain());
+        return secretMessenger.decryptStr(readPlain());
+    }
+
+    public byte[] readBytes() throws IOException {
+        return secretMessenger.decryptBytes(readPlain());
     }
     
     protected void closeAll() throws IOException {
