@@ -19,6 +19,27 @@ public class FileProcessor {
     private static final String FILESYSTEM_ROOT = "E:\\Computer Science\\Thesis\\Yr1\\FileSystem\\";
     // private static byte[] buffer = new byte[1024 * 8];
 
+    private static String getUserRoot(ServerThread server) {
+        String root = FILESYSTEM_ROOT + server.user.getUserID() + "\\";
+        new File(root).mkdirs();
+        return root;
+    }
+    public static void createDirectory(ServerThread server, String name, String path) {
+        System.out.println("Creating directory " + name + " in " + path);
+        File file = new File(path);
+        if (!file.exists()) 
+            createDirectory(server, file.getName(), file.getParent());
+        file = new File(path += "\\" + name);
+        assert !file.exists();
+        file.mkdir();
+        
+        String dirID;
+        do {
+            dirID = RandomGenerator.randomString(Constants.ID_LENGTH);
+        } while (Data.files.containsKey(dirID));
+        DFile dFile = new DFile(dirID, server.user.getUserID(), Data.pathToID.get(file.getParent()), name, "Directory", true, true, new Timestamp(new Date().getTime()));
+        DatabaseUpdater.addFile(path, dFile);
+    }
     /*
      * Receive procedure:
      * 1. Receive file info
@@ -34,9 +55,9 @@ public class FileProcessor {
         }
         String filename = params[0];
         long fileSize = Long.parseLong(params[1]);
-        String fileDest = FILESYSTEM_ROOT + server.user.getUserID() + "\\";
-        new File(fileDest).mkdirs();
+        String fileDest = getUserRoot(server);
         if (!".".equals(params[2])) fileDest += (params[2] + "\\");
+        assert new File(fileDest).exists();
         new File(fileDest).mkdirs();
         System.out.println("File destination: " + fileDest);
         File file = new File(fileDest + filename);
@@ -65,6 +86,9 @@ public class FileProcessor {
     public static void process(ServerThread serverThread, ClientCode.Command command, String[] params) {
         try {
             switch (command) {
+                case CREATE:
+                    createDirectory(serverThread, params[0], getUserRoot(serverThread) + params[1]);
+                    break;
                 case UPLOAD:
                     receiveFile(serverThread, params);
                     break;

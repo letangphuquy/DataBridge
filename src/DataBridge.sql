@@ -111,17 +111,3 @@ CREATE TABLE FileLinks
 INSERT INTO Recipients VALUES(1,'U')
 INSERT INTO Users VALUES(1, 'test', 'I am Groot', 0, 0, 0)
 INSERT INTO Passwords VALUES('test', 'salt', 'hashed_password')
-
--- DROP TABLE FileLinks
--- DROP TABLE NormalMessages
--- DROP TABLE Messages
--- DROP TABLE Comments
--- DROP TABLE Votes
--- DROP TABLE Containing
--- DROP TABLE Files
--- DROP TABLE GroupMembership
--- DROP TABLE Groups
--- DROP TABLE Friendship
--- DROP TABLE Passwords
--- DROP TABLE Users
--- DROP TABLE Recipients

@@ -56,7 +56,8 @@ public class Client extends E2ESocket {
             user = Authenticator.register("dsk", "vinataba");
             System.out.println("Registered: " + user);
             user = Authenticator.login("dsk", "vinataba");
-            FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", ".");
+            FileProcessor.createDirectory("in3", "in1\\in2");
+            FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", "in1\\in2\\in3");
 
             closeAll();
         } catch (IOException e) {

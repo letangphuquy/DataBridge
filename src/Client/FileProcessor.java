@@ -11,6 +11,11 @@ import Rules.ServerCode;
 public class FileProcessor {
     private FileProcessor() {}
     private static byte[] buffer = new byte[Constants.BUFFER_SIZE];
+
+    public static void createDirectory(String dirName, String path) throws IOException {
+        Client client = Client.instance;
+        client.send(ClientCode.Type.FILE + " " + ClientCode.Command.CREATE + " " + dirName + " " + path);
+    }
     /*
      * Upload procedure:
      * 1. Send request (filename)

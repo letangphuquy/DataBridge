@@ -29,8 +29,9 @@ public final class ClientCode {
      * AUTH <_> REGISTER, LOGIN <_> USERNAME <_> HASHED_PASSWORD
      * AUTH <_> LOGOUT
      * USER <_> FRIEND <_> USERNAME <_> STATUS (-1,0,1)
-     * FILE <_> UPLOAD <_> FILENAME <_> FILE_DATA (messages may be sent in chunks)
+     * FILE <_> UPLOAD <_> FILENAME <_> METADATA, then FILEDATA (data may be sent in chunks of 8KB)
      * FILE <_> DOWNLOAD, VIEW <_> FILENAME
+     * FILE <_> CREATE <_> FILENAME <_> METADATA (such as path, size, ...)
      * CHAT <_> ADD, REMOVE <_> USERNAME
      * CHAT <_> SEND <_> RECIPIENT <_> MESSAGE / FILE_LINK
      * CHAT <_> CREATE <_> GROUP_NAME <_> USERNAME1, USERNAME2, USERNAME3, ...
