@@ -12,12 +12,15 @@ CREATE TABLE Recipients
 -- Plural table naming due to "User" keyword collision
 CREATE TABLE Users
 (
-	user_id CHAR(30) PRIMARY KEY REFERENCES Recipients(receiver_id) NOT NULL,
+	user_id CHAR(30) PRIMARY KEY NOT NULL,
 	username VARCHAR(30) UNIQUE NOT NULL,
 	profile NVARCHAR(3000),
 	is_banned BINARY NOT NULL,
 	is_private BINARY NOT NULL,
-	reputation INT
+	reputation INT,
+	CONSTRAINT FK_user_recipient_id 
+		FOREIGN KEY(user_id)
+		REFERENCES Recipients(receiver_id) ON DELETE CASCADE,
 )
 
 -- ALTER TABLE Users ALTER COLUMN username VARCHAR(30) NOT NULL
@@ -57,7 +60,8 @@ CREATE TABLE Files
 (
 	file_id CHAR(30) PRIMARY KEY NOT NULL,
 	uploader CHAR(30) REFERENCES Users(user_id) NOT NULL,
-	parent_id CHAR(30) NOT NULL,
+	parent_id CHAR(30), 
+	-- allow null for root folders and files
 	filename NVARCHAR(80) NOT NULL,
 	notes NVARCHAR(100),
 	is_folder BINARY(1) NOT NULL,

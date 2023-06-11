@@ -23,13 +23,13 @@ public class FileProcessor {
 
         String response = client.read();
         String[] parts = response.split(" ");
-        System.out.println("Response=" + response);
+        
         if (!ServerCode.ACCEPT.toString().equals(parts[0])) return;
         System.out.println("Uploading " + file.getName() + "...");
         try (FileInputStream fileReader = new FileInputStream(file)) {
             int bytesRead = 0;
             while ((bytesRead = fileReader.read(buffer)) != -1) {
-                client.sendBytes(buffer);
+                client.sendBytes(buffer, bytesRead);
             }
         }
     }

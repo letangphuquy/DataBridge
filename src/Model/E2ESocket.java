@@ -6,6 +6,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
+import java.util.Arrays;
 
 import Rules.ClientCode;
 import Rules.ServerCode;
@@ -68,7 +69,9 @@ public class E2ESocket {
         sendPlain(secretMessenger.encryptStr(msg));
     }
 
-    public void sendBytes(byte[] msg) throws IOException {
+    public void sendBytes(byte[] msg, int length) throws IOException {
+        if (length < msg.length) 
+            msg = Arrays.copyOf(msg, length);
         sendPlain(secretMessenger.encryptBytes(msg));
     }
 
@@ -81,7 +84,7 @@ public class E2ESocket {
     }
 
     public byte[] readBytes() throws IOException {
-        return secretMessenger.decryptBytes(readPlain());
+        return secretMessenger.decryptBytes(in.readLine());
     }
     
     protected void closeAll() throws IOException {

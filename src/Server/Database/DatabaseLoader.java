@@ -49,7 +49,7 @@ public class DatabaseLoader {
     static void loadUsers() throws SQLException {
         var result = loadDatabase("Recipients");
         for (var args : result) {
-            Data.allIDs.add(args[0]);
+            Data.allReIDs.add(args[0]);
         }
         result = loadDatabase("Users");
         for (var args : result) {
@@ -70,8 +70,32 @@ public class DatabaseLoader {
         }
     }
 
-    static void loadFiles() throws SQLException {
+    private static void dfs(String node, String path) {
+        if (!Data.fileTree.containsKey(node)) return ;
+        Data.pathToID.put(path, node);
+        Data.idToPath.put(node, path);
+        System.out.println("File " + node + " has path " + path);
+        for (String child : Data.fileTree.get(node)) {
+            dfs(child, path + "\\" + Data.files.get(child).getFileName());
+        }
+    }
 
+    static void loadFiles() throws SQLException {
+        var result = loadDatabase("Files");
+        ArrayList<String> roots = new ArrayList<>();
+        for (var args : result) {
+            DFile file = new DFile(args);
+            String parent = file.getParentID();
+            if (parent != null) {
+                if (!Data.fileTree.containsKey(parent))
+                    Data.fileTree.put(parent, new ArrayList<>());
+                Data.fileTree.get(parent).add(file.getFileID());
+            }
+            else roots.add(file.getFileID());
+            Data.files.put(file.getFileID(), file);
+        }
+        for (String root : roots) 
+            dfs(root, Data.files.get(root).getUploaderID());
     }
 
     static void loadMessages() throws SQLException {
