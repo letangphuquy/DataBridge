@@ -47,13 +47,17 @@ public class Client extends E2ESocket {
     private void run() {
         // new Thread(() -> listenToServer()).start();
         try {
-            user = Authenticator.login("test2", "1");
-            System.out.println("Logged in: " + user);
             user = Authenticator.register("test2", "1");
             System.out.println("Registered: " + user);
             user = Authenticator.login("test2", "1");
             System.out.println("Logged in: " + user);
             FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", ".");
+
+            user = Authenticator.register("dsk", "vinataba");
+            System.out.println("Registered: " + user);
+            user = Authenticator.login("dsk", "vinataba");
+            FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", ".");
+
             closeAll();
         } catch (IOException e) {
             System.out.println("Error login-ing");

@@ -56,8 +56,9 @@ public class Authenticator {
         User user = new User(username);
         String recipientID = null;
         do {
-            recipientID = RandomGenerator.randomReadableString(Constants.RECIPIENT_ID_LENGTH);
-        } while (Data.allIDs.contains(recipientID));
+            recipientID = RandomGenerator.randomReadableString(Constants.ID_LENGTH);
+        } while (Data.allReIDs.contains(recipientID));
+        System.out.println("Generated recipient ID: " + recipientID);
         user.setRecipientID(recipientID);
         DatabaseUpdater.addUser(user, password);
 

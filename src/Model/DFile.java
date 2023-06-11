@@ -24,4 +24,51 @@ public class DFile {
         this.isPrivate = isPrivate;
         this.uploadTime = uploadTime;
     }
+
+    public DFile(String[] args) {
+        this.fileID = args[0];
+        this.uploaderID = args[1];
+        this.parentID = args[2];
+        this.fileName = args[3];
+        this.notes = args[4];
+        this.isFolder = Boolean.parseBoolean(args[5]);
+        this.isPrivate = Boolean.parseBoolean(args[6]);
+        this.uploadTime = Timestamp.valueOf(args[7]);
+    }
+
+    public String getFileID() {
+        return fileID;
+    }
+
+    public String getUploaderID() {
+        return uploaderID;
+    }
+
+    public String getParentID() {
+        return parentID;
+    }
+
+    public String getFileName() {
+        return fileName;
+    }
+
+    public String getNotes() {
+        return notes;
+    }
+
+    public boolean isFolder() {
+        return isFolder;
+    }
+
+    public boolean isPrivate() {
+        return isPrivate;
+    }
+
+    public Timestamp getUploadTime() {
+        return uploadTime;
+    }
+
+    public Object[] toObjectArray() {
+        return new Object[] { fileID, uploaderID, parentID, fileName, notes, isFolder, isPrivate, uploadTime };
+    }
 }

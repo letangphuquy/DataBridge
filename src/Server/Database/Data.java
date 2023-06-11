@@ -1,10 +1,12 @@
 package Server.Database;
 
 import java.sql.ResultSetMetaData;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 
+import Model.DFile;
 import Model.Password;
 import Model.User;
 
@@ -16,8 +18,16 @@ import Model.User;
 public class Data {
     static HashMap<String, ResultSetMetaData> metadataOf = new HashMap<>();
 
-    public static Set<String> allIDs = new HashSet<>();
+    // Users
+    public static Set<String> allReIDs = new HashSet<>();
     public static HashMap<String,String> usernameToID = new HashMap<String,String>();
     public static HashMap<String,User> users = new HashMap<String,User>();
     public static HashMap<String,Password> passwordOf = new HashMap<String,Password>();
+
+    // Files
+    public static HashMap<String,DFile> files = new HashMap<String,DFile>();
+    public static HashMap<String,String> idToPath = new HashMap<String,String>(); // 1 to 1
+    public static HashMap<String,String> pathToID = new HashMap<String,String>();
+    public static HashMap<String, ArrayList<String>> fileTree = new HashMap<String, ArrayList<String>>();
+
 }

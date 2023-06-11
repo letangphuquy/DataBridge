@@ -27,6 +27,7 @@ public class RandomGenerator {
             alphanumeric.add((char) i);
         for (int i = (int) 'a'; i <= (int) 'z'; i++)
             alphanumeric.add((char) i);
+        System.out.println(printable.size() + " vs. " + alphanumeric.size());
     }
 
     private static String randomString(int length, ArrayList<Character> alphabet) {
