@@ -18,6 +18,7 @@ public class Authenticator {
      * 3. Receive hashed password, verify
      * 4. Send user data (if success)
      */
+    // private static String D = (String) Constants.DELIMITER;
     private static User login(ServerThread server, String username) throws IOException {
         //Read "AUTH LOGIN <username>" and triggered by ServerThread
         String userID = Data.usernameToID.get(username);
@@ -66,6 +67,11 @@ public class Authenticator {
         return user;
     }
 
+    private static User logout(ServerThread server) {
+        //Read "AUTH LOGOUT" and triggered by ServerThread
+        return server.user = null;
+    }
+
     public static User process(ServerThread serverThread, ClientCode.Command command, String[] params) {
         try {
             switch (command) {
@@ -74,7 +80,7 @@ public class Authenticator {
                 case REGISTER:
                     return register(serverThread, params[0]);
                 case LOGOUT:
-                    return null;
+                    return logout(serverThread);
                 default:
                     return null;
             }

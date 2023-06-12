@@ -17,7 +17,7 @@ import Rules.ServerCode;
 public class Client extends E2ESocket {
     static Client instance = null;
     private PrintStream debugger = new PrintStream(System.out);
-    private static final String URL = System.getProperty("user.home") + "\\.DataBridge\\";
+    static final String URL = System.getProperty("user.home") + "\\.DataBridge\\";
 
     private Client(Socket socket) {
         super(socket, false);
@@ -51,14 +51,17 @@ public class Client extends E2ESocket {
             System.out.println("Registered: " + user);
             user = Authenticator.login("test2", "1");
             System.out.println("Logged in: " + user);
-            FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", ".");
+            FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
+            Authenticator.logout();
 
             user = Authenticator.register("dsk", "vinataba");
             System.out.println("Registered: " + user);
             user = Authenticator.login("dsk", "vinataba");
             FileProcessor.createDirectory("in3", "in1\\in2");
             FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", "in1\\in2\\in3");
-
+            FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
+            FileProcessor.download("in1\\in2\\in3\\independent_test.java");
+            Authenticator.logout();
             closeAll();
         } catch (IOException e) {
             System.out.println("Error login-ing");

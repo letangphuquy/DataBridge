@@ -94,8 +94,10 @@ public class DatabaseLoader {
             else roots.add(file.getFileID());
             Data.files.put(file.getFileID(), file);
         }
-        for (String root : roots) 
-            dfs(root, Data.files.get(root).getUploaderID());
+        for (String root : roots) {
+            DFile file = Data.files.get(root);
+            dfs(root, file.getUploaderID() + "\\" + file.getFileName());
+        }
     }
 
     static void loadMessages() throws SQLException {

@@ -5,6 +5,7 @@ package Rules;
  * Rules for communication from client to server (via sockets) (aka. requests)
  * TYPE <space> COMMAND <space> DATA
  * Special case: [TYPE=KEY] <space> DATA
+ * Update: All parts of a command are separated by 29 - ASCII group separator
  */
 
 public final class ClientCode {

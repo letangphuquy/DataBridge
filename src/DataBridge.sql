@@ -65,7 +65,7 @@ CREATE TABLE Files
 	filename NVARCHAR(80) NOT NULL,
 	notes NVARCHAR(100),
 	is_folder BINARY(1) NOT NULL,
-	is_public BINARY(1) DEFAULT(0) NOT NULL,
+	is_private BINARY(1) DEFAULT(1) NOT NULL,
 	created_at DATETIME NOT NULL,
 )
 

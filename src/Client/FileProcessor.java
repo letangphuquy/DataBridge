@@ -2,6 +2,7 @@ package Client;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 
 import Rules.ClientCode;
@@ -11,10 +12,11 @@ import Rules.ServerCode;
 public class FileProcessor {
     private FileProcessor() {}
     private static byte[] buffer = new byte[Constants.BUFFER_SIZE];
+    private static String D = (String) Constants.DELIMITER;
 
     public static void createDirectory(String dirName, String path) throws IOException {
         Client client = Client.instance;
-        client.send(ClientCode.Type.FILE + " " + ClientCode.Command.CREATE + " " + dirName + " " + path);
+        client.send(ClientCode.Type.FILE + D + ClientCode.Command.CREATE + D + dirName + D + path);
     }
     /*
      * Upload procedure:
@@ -24,7 +26,7 @@ public class FileProcessor {
     public static void upload(String srcPath, String destPath) throws IOException {
         File file = new File(srcPath);
         Client client = Client.instance;
-        client.send(ClientCode.Type.FILE + " " + ClientCode.Command.UPLOAD + " " + file.getName() + " " + file.length() + " " + destPath);
+        client.send(ClientCode.Type.FILE + D + ClientCode.Command.UPLOAD + D + file.getName() + D + file.length() + D + destPath);
 
         String response = client.read();
         String[] parts = response.split(" ");
@@ -39,94 +41,43 @@ public class FileProcessor {
         }
     }
 
-    public static byte[] download(String path) {
-        //TODO
-        return null;
-    }
-}
-/*
-Some help from: 
-+ stackoverflow.com/questions/9520911/java-sending-and-receiving-file-byte-over-sockets
-+ https://heptadecane.medium.com/file-transfer-via-java-sockets-e8d4f30703a5
-import java.io.*;
-import java.net.Socket;
+    /*
+     * Download procedure:
+     * 1. Send request (filename)
+     * 2a. Get file metadata (size, name)
+     * 2. Receive file data (in chunks)
+     */
+    public static void download(String path) throws IOException {
+        String DOWNLOAD_URL = Client.URL + "\\downloads\\";
+        Client client = Client.instance;
+        client.send(ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD + D + path);
 
-public class Client {
-    private static DataOutputStream dataOutputStream = null;
-    private static DataInputStream dataInputStream = null;
-
-    public static void main(String[] args) {
-        try(Socket socket = new Socket("localhost",5000)) {
-            dataInputStream = new DataInputStream(socket.getInputStream());
-            dataOutputStream = new DataOutputStream(socket.getOutputStream());
-
-            sendFile("path/to/file1.pdf");
-            sendFile("path/to/file2.pdf");
-            
-            dataInputStream.close();
-            dataInputStream.close();
-        }catch (Exception e){
-            e.printStackTrace();
+        String response = client.read();
+        System.out.println(response);
+        String[] parts = response.split(D);
+        if (!ServerCode.ACCEPT.toString().equals(parts[0])) {
+            System.out.println("Download failed: " + response);
+            return ;
         }
-    }
 
-    private static void sendFile(String path) throws Exception{
-        int bytes = 0;
-        File file = new File(path);
-        FileInputStream fileInputStream = new FileInputStream(file);
+        response = client.read();
+        System.out.println(response);
+        parts = response.split(D);
+        String filename = parts[0];
+        long fileSize = Long.parseLong(parts[1]);
         
-        // send file size
-        dataOutputStream.writeLong(file.length());  
-        // break file into chunks
-        byte[] buffer = new byte[4*1024];
-        while ((bytes=fileInputStream.read(buffer))!=-1){
-            dataOutputStream.write(buffer,0,bytes);
-            dataOutputStream.flush();
+        new File(DOWNLOAD_URL).mkdirs();
+        File file = new File(DOWNLOAD_URL + filename);
+        if (!file.exists()) file.createNewFile();
+
+        try (FileOutputStream fileWriter = new FileOutputStream(file)) {
+            long bytesReceived = 0;
+            while (bytesReceived < fileSize) {
+                byte[] buffer = client.readBytes();
+                fileWriter.write(buffer);
+                bytesReceived += buffer.length;
+            }
         }
-        fileInputStream.close();
+        System.out.println("File " + filename + " downloaded successfully!");
     }
 }
-
-import java.io.DataInputStream;
-import java.io.DataOutputStream;
-import java.io.FileOutputStream;
-import java.net.ServerSocket;
-import java.net.Socket;
-
-public class Server {
-    private static DataOutputStream dataOutputStream = null;
-    private static DataInputStream dataInputStream = null;
-
-    public static void main(String[] args) {
-        try(ServerSocket serverSocket = new ServerSocket(5000)){
-            System.out.println("listening to port:5000");
-            Socket clientSocket = serverSocket.accept();
-            System.out.println(clientSocket+" connected.");
-            dataInputStream = new DataInputStream(clientSocket.getInputStream());
-            dataOutputStream = new DataOutputStream(clientSocket.getOutputStream());
-
-            receiveFile("NewFile1.pdf");
-            receiveFile("NewFile2.pdf");
-
-            dataInputStream.close();
-            dataOutputStream.close();
-            clientSocket.close();
-        } catch (Exception e){
-            e.printStackTrace();
-        }
-    }
-
-    private static void receiveFile(String fileName) throws Exception{
-        int bytes = 0;
-        FileOutputStream fileOutputStream = new FileOutputStream(fileName);
-        
-        long size = dataInputStream.readLong();     // read file size
-        byte[] buffer = new byte[4*1024];
-        while (size > 0 && (bytes = dataInputStream.read(buffer, 0, (int)Math.min(buffer.length, size))) != -1) {
-            fileOutputStream.write(buffer,0,bytes);
-            size -= bytes;      // read upto file size
-        }
-        fileOutputStream.close();
-    }
-}
- */

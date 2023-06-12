@@ -11,7 +11,7 @@ import Rules.ServerCode;
 
 public class Authenticator {
     private Authenticator() {}
-    
+    private static String D = (String) Constants.DELIMITER;
     private static boolean isAttemptFailed(String action, String[] parts) {
         if (!ServerCode.REJECT.toString().equals(parts[0])) {
             return false;
@@ -31,7 +31,7 @@ public class Authenticator {
      */
     public static User login(String username, String password) throws IOException {
         Client client = Client.instance;
-        client.send(ClientCode.Type.AUTH + " " + ClientCode.Command.LOGIN + " " + username);
+        client.send(ClientCode.Type.AUTH + D + ClientCode.Command.LOGIN + D + username);
         
         String response = client.read();
         String[] parts = response.split(" ");
@@ -58,7 +58,7 @@ public class Authenticator {
      */
     public static User register(String username, String password) throws IOException {
         Client client = Client.instance;
-        client.send(ClientCode.Type.AUTH + " " + ClientCode.Command.REGISTER + " " + username);
+        client.send(ClientCode.Type.AUTH + D + ClientCode.Command.REGISTER + D + username);
 
         String response = client.read();
         String[] parts = response.split(" ");
@@ -72,5 +72,11 @@ public class Authenticator {
         response = client.read();
         parts = response.split((String) Constants.DELIMITER);
         return new User(parts);
+    }
+
+    public static void logout() throws IOException {
+        Client client = Client.instance;
+        client.send(ClientCode.Type.AUTH + D + ClientCode.Command.LOGOUT);
+        client.user = null;
     }
 }

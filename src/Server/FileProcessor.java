@@ -1,6 +1,7 @@
 package Server;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
@@ -17,21 +18,21 @@ import Server.Database.DatabaseUpdater;
 public class FileProcessor {
     private FileProcessor() {}
     private static final String FILESYSTEM_ROOT = "E:\\Computer Science\\Thesis\\Yr1\\FileSystem\\";
-    // private static byte[] buffer = new byte[1024 * 8];
+    private static final String D = (String) Constants.DELIMITER;
+    private static byte[] buffer = new byte[Constants.BUFFER_SIZE];
 
     private static String getUserRoot(ServerThread server) {
         String root = FILESYSTEM_ROOT + server.user.getUserID() + "\\";
         new File(root).mkdirs();
         return root;
     }
-    public static void createDirectory(ServerThread server, String name, String path) {
+    private static void createDirectory(ServerThread server, String name, String path) {
         System.out.println("Creating directory " + name + " in " + path);
         File file = new File(path);
         if (!file.exists()) 
             createDirectory(server, file.getName(), file.getParent());
         file = new File(path += "\\" + name);
-        assert !file.exists();
-        file.mkdir();
+        if (!file.mkdir()) return;
         
         String dirID;
         do {
@@ -47,7 +48,7 @@ public class FileProcessor {
      * 3. Receive file data (in chunks of 8KB)
      * 4. Register file in database
      */
-    public static void receiveFile(ServerThread server, String[] params) throws IOException {
+    private static void receiveFile(ServerThread server, String[] params) throws IOException {
         //Files uploaded by users are stored in a remote file system
         System.out.println("Hello ");
         for (String param : params) {
@@ -56,10 +57,10 @@ public class FileProcessor {
         String filename = params[0];
         long fileSize = Long.parseLong(params[1]);
         String fileDest = getUserRoot(server);
-        if (!".".equals(params[2])) fileDest += (params[2] + "\\");
+        if (params.length >= 3 && !"".equals(params[2])) fileDest += (params[2] + "\\");
+        System.out.println("File destination: " + fileDest);
         assert new File(fileDest).exists();
         new File(fileDest).mkdirs();
-        System.out.println("File destination: " + fileDest);
         File file = new File(fileDest + filename);
         if (!file.exists()) file.createNewFile();
         server.send(ServerCode.ACCEPT.toString());
@@ -80,7 +81,38 @@ public class FileProcessor {
         } while (Data.files.containsKey(fileID));
 
         DFile dFile = new DFile(fileID, server.user.getUserID(), Data.pathToID.get(file.getParent()), filename, "Some notes about the file content", file.isDirectory(), true, new Timestamp(new Date().getTime()));
-        DatabaseUpdater.addFile(fileDest, dFile);
+        DatabaseUpdater.addFile(file.getPath(), dFile);
+    }
+    /*
+     * Send procedure:
+     * 1. Verify file existence
+     * 2. Send file info
+     * 3. Send file data (in chunks of 8KB)
+     */
+    private static void sendFile(ServerThread server, String path) throws IOException {
+        path = getUserRoot(server) + path;
+        System.out.println("Getting file " + path);
+        DFile dFile = Data.files.get(Data.pathToID.get(path));
+        if (dFile == null) {
+            server.send(ServerCode.REJECT + D + "filepath not found");
+            return;
+        }
+        File file = new File(path);
+        if (!file.exists()) {
+            server.send(ServerCode.ERROR + D + "file not found in server");
+            return;
+        }
+
+        server.send(ServerCode.ACCEPT.toString());
+        long fileSize = file.length();
+        server.send(file.getName() + D + fileSize);
+
+        try (FileInputStream fileReader = new FileInputStream(file)) {
+            int bytesRead = 0;
+            while ((bytesRead = fileReader.read(buffer)) != -1)  {
+                server.sendBytes(buffer, bytesRead);
+            }
+        }
     }
     
     public static void process(ServerThread serverThread, ClientCode.Command command, String[] params) {
@@ -93,7 +125,7 @@ public class FileProcessor {
                     receiveFile(serverThread, params);
                     break;
                 case DOWNLOAD:
-                    //TODO
+                    sendFile(serverThread, params[0]);
                     break;
                 default:
                     break;
