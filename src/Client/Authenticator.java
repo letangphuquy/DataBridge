@@ -61,6 +61,7 @@ public class Authenticator {
         client.send(ClientCode.Type.AUTH + D + ClientCode.Command.REGISTER + D + username);
 
         String response = client.read();
+        System.out.println("Response: " + response);
         String[] parts = response.split(" ");
         if (isAttemptFailed("Register", parts)) return null;
 
@@ -76,7 +77,16 @@ public class Authenticator {
 
     public static void logout() throws IOException {
         Client client = Client.instance;
+        for (var thread : client.independentThreads)
+            try {
+                thread.join();
+            } catch (InterruptedException e) {
+                System.out.println("Could not join thread " + thread.getName());
+                client.debug(e);
+            }
+        client.independentThreads.clear();
         client.send(ClientCode.Type.AUTH + D + ClientCode.Command.LOGOUT);
         client.user = null;
+        client.requests.clear();
     }
 }

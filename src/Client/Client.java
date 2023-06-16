@@ -9,8 +9,12 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import Model.E2ESocket;
+import Rules.ClientCode;
+import Rules.Constants;
 import Rules.HostAddress;
 import Rules.ServerCode;
 
@@ -19,49 +23,75 @@ public class Client extends E2ESocket {
     private PrintStream debugger = new PrintStream(System.out);
     static final String URL = System.getProperty("user.home") + "\\.DataBridge\\";
 
+    ArrayList<String> requests = new ArrayList<>();
+    ArrayList<Thread> independentThreads = new ArrayList<>();
+
     private Client(Socket socket) {
         super(socket, false);
         initDebugger();
     }
+
+    @Override
+    public void send(String msg) throws IOException {
+        // System.out.println("Hi, I'm going to send: " + msg);
+        super.send(msg);
+    }
     
     void listenToServer() {
-        String msg;
-        try {
-            while (user == null);
-            while ((msg = in.readLine()) != null) {
+        while (isConnected()) {
+            if (user == null) continue;
+            System.out.println("\tEffective listener running");
+            try {
+                String msg = read();
                 System.out.println("Received: " + msg);
-                msg = secretMessenger.decryptStr(msg);
-                System.out.println("Decrypted: " + msg);
+                if (msg == null) break;
                 String[] parts = msg.split(" ");
-                switch (ServerCode.valueOf(parts[0])) {
-                    default:
-                        break;
+                if (ServerCode.ACCEPT.toString().equals(parts[0])) {
+                    int requestID = Integer.parseInt(parts[1]);
+                    String request = requests.get(requestID);
+                    parts = request.split((String) Constants.DELIMITER);
+                    String type = parts[0];
+                    String command = parts[1];
+                    ClientCode.Type msgType = ClientCode.Type.valueOf(type);
+                    ClientCode.Command msgCommand = ClientCode.Command.valueOf(command);
+                    // parts = Stream.of(parts).skip(2).toArray(String[]::new);
+                    // System.out.println("Debugging:");
+                    // for (String part : parts) System.out.println(part);
+                    switch (msgType) {
+                        case FILE:
+                            FileProcessor.process(msgCommand, new String[] {requestID + ""});
+                            break;
+                        default:
+                            System.out.println("Message type not recognized " + msg);
+                    }
+                    requests.remove(requestID);
                 }
-            }
-        } catch (IOException e) {
-            System.out.println("Error in listening and processing server's response. Server may be down");
-            debug(e);
-        } 
+            } catch (IOException e) {
+                System.out.println("Error in listening and processing server's response. Server may be down");
+                debug(e);
+                break;
+            } 
+        }
     }
 
     private void run() {
-        // new Thread(() -> listenToServer()).start();
         try {
-            user = Authenticator.register("test2", "1");
-            System.out.println("Registered: " + user);
+            System.out.println("Registered: " + Authenticator.register("test2", "1"));
             user = Authenticator.login("test2", "1");
             System.out.println("Logged in: " + user);
+            Thread serverListener = new Thread(() -> listenToServer());
+            serverListener.start();
+            independentThreads.add(serverListener);
             FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
-            Authenticator.logout();
+            // Authenticator.logout();
 
-            user = Authenticator.register("dsk", "vinataba");
-            System.out.println("Registered: " + user);
-            user = Authenticator.login("dsk", "vinataba");
-            FileProcessor.createDirectory("in3", "in1\\in2");
-            FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", "in1\\in2\\in3");
-            FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
-            FileProcessor.download("in1\\in2\\in3\\independent_test.java");
-            Authenticator.logout();
+            // System.out.println("Registered: " + Authenticator.register("dsk", "vinataba"));
+            // user = Authenticator.login("dsk", "vinataba");
+            // FileProcessor.createDirectory("in3", "in1\\in2");
+            // FileProcessor.upload("E:\\Computer Science\\Sandbox\\independent_test.java", "in1\\in2\\in3");
+            // FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
+            // // FileProcessor.download("in1\\in2\\in3\\independent_test.java");
+            // Authenticator.logout();
             closeAll();
         } catch (IOException e) {
             System.out.println("Error login-ing");
@@ -82,11 +112,12 @@ public class Client extends E2ESocket {
         }
     }
     
-    private void debug(Exception e) {
+    void debug(Exception e) {
         if (debugger != null) {
             debugger.println(e.getMessage());
             e.printStackTrace(debugger);
-        }
+        } 
+        e.printStackTrace();
     }
     
     private void initDebugger() {

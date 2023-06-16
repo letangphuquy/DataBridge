@@ -8,6 +8,7 @@ import java.util.stream.Stream;
 import Model.E2ESocket;
 
 public class ServerThread extends E2ESocket implements Runnable {
+    
     ServerThread(Socket socket) {
         super(socket, true);
     }
@@ -15,8 +16,9 @@ public class ServerThread extends E2ESocket implements Runnable {
     @Override
     public void run() {
         try {
-            String msg;
-            while ((msg = in.readLine()) != null) {
+            while (isConnected()) {
+                String msg = in.readLine();
+                if (msg == null) break;
                 System.out.println("Received: " + msg);
                 msg = secretMessenger.decryptStr(msg);
                 System.out.println("Decrypted: " + msg);

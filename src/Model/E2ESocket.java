@@ -31,8 +31,8 @@ public class E2ESocket {
         assert socket != null;
         this.socket = socket;
         try {
-            socket.setSendBufferSize(Constants.BUFFER_SIZE);
-            socket.setReceiveBufferSize(Constants.BUFFER_SIZE);
+            socket.setSendBufferSize(Constants.BUFFER_SIZE * 2);
+            socket.setReceiveBufferSize(Constants.BUFFER_SIZE * 2);
             System.out.println("Connected to " + socket.getInetAddress());
         } catch (SocketException e) {
             System.out.println("Error in setting buffer size");
@@ -44,6 +44,10 @@ public class E2ESocket {
         } catch (IOException e) {
             System.out.println("Error in setting up I/O streams for communication, or in key exchanging");
         }
+    }
+
+    public boolean isConnected() {
+        return !socket.isClosed();
     }
     
     private void doKeyExchange(boolean sendFirst) throws IOException {
@@ -77,7 +81,7 @@ public class E2ESocket {
         sendPlain(secretMessenger.encryptStr(msg));
     }
 
-    public void sendBytes(byte[] msg, int length) throws IOException {
+    private void sendBytes(byte[] msg, int length) throws IOException {
         if (length < msg.length) 
             msg = Arrays.copyOf(msg, length);
         sendPlain(secretMessenger.encryptBytes(msg));
@@ -91,7 +95,7 @@ public class E2ESocket {
         return secretMessenger.decryptStr(readPlain());
     }
 
-    public byte[] readBytes() throws IOException {
+    private byte[] readBytes() throws IOException {
         return secretMessenger.decryptBytes(in.readLine());
     }
     

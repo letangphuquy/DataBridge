@@ -69,6 +69,7 @@ public class Authenticator {
 
     private static User logout(ServerThread server) {
         //Read "AUTH LOGOUT" and triggered by ServerThread
+        FileProcessor.filesOnReceiving.clear();
         return server.user = null;
     }
 

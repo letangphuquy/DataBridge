@@ -7,6 +7,8 @@ package Rules;
  * Special cases: 
  * - "KEY" + <space> + Public_Key
  * - "ACCEPT" + <space> + [User information (JSON)] (on login success)
+ * MAJOR UPDATE:
+ * ServerCode will be symmetrical to ClientCode
  */
 
 public enum ServerCode {
