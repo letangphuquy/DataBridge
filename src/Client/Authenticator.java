@@ -76,15 +76,18 @@ public class Authenticator {
     }
 
     public static void logout() throws IOException {
+        System.out.println("Logging out");
         Client client = Client.instance;
         for (var thread : client.independentThreads)
             try {
+                System.out.println("Waiting for thread " + thread.getName() + " to join");
                 thread.join();
             } catch (InterruptedException e) {
                 System.out.println("Could not join thread " + thread.getName());
                 client.debug(e);
             }
         client.independentThreads.clear();
+        System.out.println("Resolved all tasks");
         client.send(ClientCode.Type.AUTH + D + ClientCode.Command.LOGOUT);
         client.user = null;
         client.requests.clear();

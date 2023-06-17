@@ -55,10 +55,7 @@ public class FileProcessor {
      * 4. Register file in database
      */
     private static void receiveFile(ServerThread server, String[] params) throws IOException {
-        System.out.println("File Hello ");
-        for (String param : params) {
-            System.out.println("File " + param);
-        }
+        System.out.println("File Hello " + params[0]);
         String filename = params[0];
         long fileSize = Long.parseLong(params[1]);
         int requestID = Integer.parseInt(params[params.length - 1]);
@@ -96,10 +93,12 @@ public class FileProcessor {
         byte[] buffer = TypesConverter.stringToBytes(data);
         long bytesReceived = buffer.length;
         fileWriter.write(buffer);
+        System.out.println("Written " + bytesReceived + " bytes to destination file");
         if ((remainingCount -= bytesReceived) <= 0) {
             fileWriter.close();
             filesOnReceiving.remove(requestID);
             bytesRemaining.remove(requestID);
+            System.out.println("File received successfully");
         }
         else bytesRemaining.put(requestID, remainingCount);
         // TODO: Consider implementing Producer-Consumer pattern

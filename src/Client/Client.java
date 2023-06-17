@@ -83,8 +83,7 @@ public class Client extends E2ESocket {
             serverListener.start();
             independentThreads.add(serverListener);
             FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
-            // Authenticator.logout();
-
+            Authenticator.logout();
             // System.out.println("Registered: " + Authenticator.register("dsk", "vinataba"));
             // user = Authenticator.login("dsk", "vinataba");
             // FileProcessor.createDirectory("in3", "in1\\in2");

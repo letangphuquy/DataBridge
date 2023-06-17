@@ -19,9 +19,11 @@ public class ServerThread extends E2ESocket implements Runnable {
             while (isConnected()) {
                 String msg = in.readLine();
                 if (msg == null) break;
-                System.out.println("Received: " + msg);
+                System.out.println("Received: " + msg.substring(0, Math.min(100, msg.length())));
                 msg = secretMessenger.decryptStr(msg);
-                System.out.println("Decrypted: " + msg);
+                String displayMsg = msg;
+                if (displayMsg.length() > 100) displayMsg = displayMsg.substring(0, 100) + "...";
+                System.out.println("Decrypted: " + displayMsg);
                 String[] parts = msg.split((String) Constants.DELIMITER);
                 String type = parts[0];
                 ClientCode.Command command = ClientCode.Command.valueOf(parts[1]);

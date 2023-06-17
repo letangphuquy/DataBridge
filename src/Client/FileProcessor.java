@@ -47,24 +47,14 @@ public class FileProcessor {
         client.requests.add(msg + D + srcPath);
     }
     public static void uploadData(int requestID) throws IOException {
-        final String info = client.requests.get(requestID);
+        String info = client.requests.get(requestID);
         String[] infoParts = info.split(D);
         assert ClientCode.Type.FILE.toString().equals(infoParts[0]);
         assert ClientCode.Command.UPLOAD.toString().equals(infoParts[1]);
         String srcPath = infoParts[2];
+        final String msgPrefix = ClientCode.Type.FILE + D + ClientCode.Command.UPLOAD + D + requestID; // can't reuse info because it's contains srcPath, which is not needed here
         File file = new File(srcPath);
         System.out.println("Uploading " + file.getName() + "...");
-        client.send("FUCK WHY BUG");
-        if (false)
-        try (FileInputStream fileReader = new FileInputStream(file)) {
-            int bytesRead = 0;
-            
-            while ((bytesRead = fileReader.read(buffer)) != -1) {
-                String msg = info + D + requestID + D + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead));
-                // System.out.println("Sending: " + msg);
-                client.send(msg);
-            }
-        } 
         Thread uploadFile = new Thread(new Runnable() {
             //Non-blocking upload
             @Override
@@ -73,17 +63,17 @@ public class FileProcessor {
                     int bytesRead = 0;
                     
                     while ((bytesRead = fileReader.read(buffer)) != -1) {
-                        String msg = info + D + requestID + D + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead));
-                        // System.out.println("Sending: " + msg);
+                        String msg = msgPrefix + D + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead));
                         client.send(msg);
                     }
                 } catch (IOException e) {
                     System.out.println("Upload failed: " + e.getMessage());
                     client.debug(e);
                 }
+                System.out.println("File " + file.getName() + " uploaded successfully!");
             }
         });
-        // uploadFile.start();
+        uploadFile.start();
         client.independentThreads.add(uploadFile);
     }
 
