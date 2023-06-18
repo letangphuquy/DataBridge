@@ -8,26 +8,40 @@ public class Recipient {
     private char type;
 
     Recipient(char type) {
-        // this.recipientID = RandomGenerator.randomString(Constants.RECIPIENT_ID_LENGTH);
-		recipientID = Constants.DEFAULT_ID;
+		recipientID = publicID = Constants.DEFAULT_ID;
         this.type = type;
     }
-	Recipient(long recipientID, char type) {
-		this.recipientID = recipientID;
-		this.type = type;
+
+	Recipient(Recipient other) {
+		recipientID = other.recipientID;
+		publicID = other.publicID;
+		type = other.type;
 	}
 	
-	public long getRecipientID() {
+	protected long getRecipientID() {
 		return recipientID;
 	}
-	public void setRecipientID(long recipientID) {
+	
+	public long getPublicID() {
+		return publicID;
+	}
+
+	public void setIDs(long recipientID, long publicID) {
 		this.recipientID = recipientID;
+		this.publicID = publicID;
 	}
 	public char getType() {
 		return type;
 	}
 
 	public Object[] toObjectArray() {
-		return new Object[] {recipientID, type};
+		return new Object[] {recipientID, publicID, type};
 	}
+
+	protected Recipient getRecipient() {
+		// Solution for the bug found at mentioned in User.java
+		return new Recipient(this);
+	}
+
+
 }

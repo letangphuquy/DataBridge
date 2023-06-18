@@ -27,8 +27,7 @@ public class User extends Recipient {
 	public User(String[] data) {
 		super('U');
 		// System.out.println("User data: " + String.join(Constants.DELIMITER, data));
-		// data[0] is recipientID/ userID
-		super.setRecipientID(Long.parseLong(data[0]));
+		// data[0] is recipientID/ userID (private), and is set automatically in database loading process, or when creating new user
 		this.username = data[1];
 		this.profile = data[2];
 		this.isBanned = Boolean.parseBoolean(data[3]);
@@ -94,6 +93,7 @@ public class User extends Recipient {
 	}
 
 	public Recipient toRecipient() {
-		return new Recipient(getRecipientID(), getType());
+		//Rare BUG encounter: Internal type of the Recipient is a User, so `return this` on super method returns User's information instead of Recipient's
+		return super.getRecipient();
 	}
 }

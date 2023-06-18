@@ -49,11 +49,18 @@ public class DatabaseLoader {
     static void loadUsers() throws SQLException {
         var result = loadDatabase("Recipients");
         for (var args : result) {
-            Data.allReIDs.add(Long.parseLong(args[0]));
+            long recipientID = Long.parseLong(args[0]);
+            long publicID = Long.parseLong(args[1]);
+            Data.recipientIDs.add(recipientID);
+            Data.publicIDToRecipientID.put(publicID, recipientID);
+            Data.recipientIDToPublicID.put(recipientID, publicID);
         }
         result = loadDatabase("Users");
         for (var args : result) {
             User user = new User(args);
+            long userID = Long.parseLong(args[0]);
+            long publicID = Data.recipientIDToPublicID.get(userID);
+            user.setIDs(userID, publicID);
             Data.users.put(user.getUserID(), user);
             Data.usernameToID.put(user.getUsername(), user.getUserID());
         }

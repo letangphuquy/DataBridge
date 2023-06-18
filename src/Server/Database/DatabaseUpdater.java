@@ -26,7 +26,7 @@ public class DatabaseUpdater {
                 statement.setObject(i+1, args[i]);
                 // System.out.println("Set type " + metadata.getColumnType(i+1) + " for column " + metadata.getColumnName(i+1) + " in table " + tableName);
             }
-            System.out.println("Executing command: " + statement.toString());
+            System.out.println("Executing command: " + command);
             statement.executeUpdate();
         }
     }
@@ -36,6 +36,11 @@ public class DatabaseUpdater {
         Data.users.put(user.getUserID(), user);
         Data.passwordOf.put(user.getUsername(), password);
         try {
+            Object[] args = user.toRecipient().toObjectArray();
+            System.out.println("Adding recipient: ");
+            for (Object arg : args)
+                System.out.print(arg + " ");
+            System.out.println();
             addToTable("Recipients", user.toRecipient().toObjectArray());
             addToTable("Users", user.toObjectArray());
             addToTable("Passwords", password.toObjectArray());

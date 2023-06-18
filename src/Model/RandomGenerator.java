@@ -65,6 +65,10 @@ public class RandomGenerator {
         return random.nextLong();
     }
 
+    public static long randomPublicID() {
+        return Math.abs(randomID());
+    } 
+
     public static byte[] randomSalt() {
         byte[] salt = new byte[SALT_LENGTH];
         random.nextBytes(salt);

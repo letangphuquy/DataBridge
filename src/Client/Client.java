@@ -83,9 +83,9 @@ public class Client extends E2ESocket {
 
     private void run() {
         try {
-            Authenticator.register("test2", "1");
             boolean flag = false;
             if (flag) {
+                Authenticator.register("test2", "1");
                 Authenticator.login("test2", "1");
                 System.out.println("Logged in: " + user);
                 FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
