@@ -1,23 +1,26 @@
 package Model;
 
+import Rules.Constants;
+
 public class Recipient {
-    private String recipientID; 
+    private long recipientID; 
+	private long publicID; // used for chat, to hide real ID
     private char type;
 
     Recipient(char type) {
         // this.recipientID = RandomGenerator.randomString(Constants.RECIPIENT_ID_LENGTH);
-		recipientID = null;
+		recipientID = Constants.DEFAULT_ID;
         this.type = type;
     }
-	Recipient(String recipientID, char type) {
+	Recipient(long recipientID, char type) {
 		this.recipientID = recipientID;
 		this.type = type;
 	}
 	
-	public String getRecipientID() {
+	public long getRecipientID() {
 		return recipientID;
 	}
-	public void setRecipientID(String recipientID) {
+	public void setRecipientID(long recipientID) {
 		this.recipientID = recipientID;
 	}
 	public char getType() {

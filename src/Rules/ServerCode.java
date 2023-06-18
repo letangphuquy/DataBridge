@@ -3,10 +3,14 @@ package Rules;
 /**
  * ServerCode
  * Rules for communication from server to client (via sockets) (aka. responses)
- * Code + <space> + Requester_User_ID + <space> +  Details
- * Special cases: 
- * - "KEY" + <space> + Public_Key
- * - "ACCEPT" + <space> + [User information (JSON)] (on login success)
+ * 
+ * Let D be the delimiter
+//  * Code + D + Requester_User_ID + D + Details
+ * Use cases: 
+ * - "KEY" + D + Public_Key
+ * - "ACCEPT" + D + [User information (JSON)] (on login success)
+ * - "REJECT" + D + [Reason] (on login failure)
+ * - "ACCEPT" + D + [Request_ID] (on request success, for example, file upload)
  * MAJOR UPDATE:
  * ServerCode will be symmetrical to ClientCode
  */

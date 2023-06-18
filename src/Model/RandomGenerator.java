@@ -5,6 +5,14 @@ import java.util.ArrayList;
 
 //alphanumeric
 public class RandomGenerator {
+    static SecureRandom random = new SecureRandom();
+    static {
+        try {
+            random = SecureRandom.getInstance("SHA1PRNG", "SUN");
+        } catch (Exception e) {
+            System.out.println("Error finding algorithm or provider for SecureRandom");
+        }
+    }
     private RandomGenerator() {}
     private static int SALT_LENGTH = 16;
 
@@ -39,26 +47,27 @@ public class RandomGenerator {
         return sb.toString();
     }
 
+    // for fileID
     public static String randomString(int length) {
         createAlphabets();
         return randomString(length, printable);
     }
 
+    /*
+    Currently unused
     public static String randomReadableString(int length) {
         createAlphabets();
         return randomString(length, alphanumeric);
+    } 
+     */
+
+    public static long randomID() {
+        return random.nextLong();
     }
 
     public static byte[] randomSalt() {
-        SecureRandom random;
-        try {
-            random = SecureRandom.getInstance("SHA1PRNG", "SUN");
-            byte[] salt = new byte[SALT_LENGTH];
-            random.nextBytes(salt);
-            return salt;
-        } catch (Exception e) {
-            System.out.println("Error finding algorithm or provider for SecureRandom in creation of salt");
-        } 
-        return null;
+        byte[] salt = new byte[SALT_LENGTH];
+        random.nextBytes(salt);
+        return salt;
     }
 }

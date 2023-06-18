@@ -4,7 +4,10 @@ import Rules.Constants;
 
 public class User extends Recipient {
     /**
-     * username: unique, max 30 characters, NOT contain SPACE
+     * username: unique, max 30 characters, NOT contain SPACE.
+	 * 		used for login only
+	 * userID: unique 64-bit integer, used for database
+	 * publicID: unique 64-bit integer, used for chat, to hide real ID
 	 * name: reserved in first 60 characters of profile (too lazy to drop whole database and redesign)
      */
     private String username;
@@ -25,7 +28,7 @@ public class User extends Recipient {
 		super('U');
 		// System.out.println("User data: " + String.join(Constants.DELIMITER, data));
 		// data[0] is recipientID/ userID
-		super.setRecipientID(data[0]);
+		super.setRecipientID(Long.parseLong(data[0]));
 		this.username = data[1];
 		this.profile = data[2];
 		this.isBanned = Boolean.parseBoolean(data[3]);
@@ -33,7 +36,7 @@ public class User extends Recipient {
 		this.reputation = Integer.parseInt(data[5]);
 	}
 
-    public String getUserID() {
+    public long getUserID() {
         return super.getRecipientID();
     }
 
@@ -83,7 +86,7 @@ public class User extends Recipient {
 
     @Override
 	public String toString() {
-		return String.join(Constants.DELIMITER, getUserID(), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
+		return String.join(Constants.DELIMITER, Long.toString(getUserID()), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
 	}
 
 	public Object[] toObjectArray() {

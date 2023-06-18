@@ -21,11 +21,11 @@ public class Authenticator {
     // private static String D = (String) Constants.DELIMITER;
     private static User login(ServerThread server, String username) throws IOException {
         //Read "AUTH LOGIN <username>" and triggered by ServerThread
-        String userID = Data.usernameToID.get(username);
-        if (userID == null) {
+        if (!Data.usernameToID.containsKey(username)) {
             server.send(ServerCode.REJECT + " username not exists");
             return null;
         }
+        long userID = Data.usernameToID.get(username);
         Password password = Data.passwordOf.get(username);
         server.send(ServerCode.DATA + " " + password.getSalt());
         String hashedPassword = server.read();
@@ -43,8 +43,7 @@ public class Authenticator {
      */
     private static User register(ServerThread server, String username) throws IOException {
         //Read "AUTH REGISTER <username>" and triggered by ServerThread
-        String userID = Data.usernameToID.get(username);
-        if (userID != null) {
+        if (Data.usernameToID.containsKey(username)) {
             server.send(ServerCode.REJECT + " username already exists");
             return null;
         }
@@ -55,9 +54,9 @@ public class Authenticator {
         String hashedPassword = server.read();
         Password password = new Password(username, saltString, hashedPassword);
         User user = new User(username);
-        String recipientID = null;
+        long recipientID = Constants.DEFAULT_ID;
         do {
-            recipientID = RandomGenerator.randomReadableString(Constants.ID_LENGTH);
+            recipientID = RandomGenerator.randomID();
         } while (Data.allReIDs.contains(recipientID));
         System.out.println("Generated recipient ID: " + recipientID);
         user.setRecipientID(recipientID);

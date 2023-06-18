@@ -7,13 +7,14 @@ import java.sql.Timestamp;
  * Store file's metadata
  */
 public class DFile {
-    String fileID, uploaderID, parentID, fileName;
+    String fileID, parentID, fileName;
+    long uploaderID;
     String notes;
     boolean isFolder;
     boolean isPrivate;
     Timestamp uploadTime;
 
-    public DFile(String fileID, String uploaderID, String parentID, String fileName, String notes, boolean isFolder,
+    public DFile(String fileID, long uploaderID, String parentID, String fileName, String notes, boolean isFolder,
             boolean isPrivate, Timestamp uploadTime) {
         this.fileID = fileID;
         this.uploaderID = uploaderID;
@@ -27,7 +28,7 @@ public class DFile {
 
     public DFile(String[] args) {
         this.fileID = args[0];
-        this.uploaderID = args[1];
+        this.uploaderID = Long.parseLong(args[1]);
         this.parentID = args[2];
         this.fileName = args[3];
         this.notes = args[4];
@@ -40,7 +41,7 @@ public class DFile {
         return fileID;
     }
 
-    public String getUploaderID() {
+    public long getUploaderID() {
         return uploaderID;
     }
 

@@ -7,7 +7,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.Socket;
 import java.net.SocketException;
-import java.util.Arrays;
 
 import Rules.ClientCode;
 import Rules.Constants;
@@ -31,8 +30,9 @@ public class E2ESocket {
         assert socket != null;
         this.socket = socket;
         try {
-            socket.setSendBufferSize(Constants.BUFFER_SIZE * 2);
-            socket.setReceiveBufferSize(Constants.BUFFER_SIZE * 2);
+            // Filesize + 256 bytes for communication code
+            socket.setSendBufferSize(Constants.BUFFER_SIZE + 256);
+            socket.setReceiveBufferSize(Constants.BUFFER_SIZE + 256);
             System.out.println("Connected to " + socket.getInetAddress());
         } catch (SocketException e) {
             System.out.println("Error in setting buffer size");
@@ -81,11 +81,11 @@ public class E2ESocket {
         sendPlain(secretMessenger.encryptStr(msg));
     }
 
-    private void sendBytes(byte[] msg, int length) throws IOException {
-        if (length < msg.length) 
-            msg = Arrays.copyOf(msg, length);
-        sendPlain(secretMessenger.encryptBytes(msg));
-    }
+    // private void sendBytes(byte[] msg, int length) throws IOException {
+    //     if (length < msg.length) 
+    //         msg = Arrays.copyOf(msg, length);
+    //     sendPlain(secretMessenger.encryptBytes(msg));
+    // }
 
     protected String readPlain() throws IOException {
         return in.readLine();
@@ -95,13 +95,13 @@ public class E2ESocket {
         return secretMessenger.decryptStr(readPlain());
     }
 
-    private byte[] readBytes() throws IOException {
-        return secretMessenger.decryptBytes(in.readLine());
-    }
+    // private byte[] readBytes() throws IOException {
+    //     return secretMessenger.decryptBytes(in.readLine());
+    // }
     
     protected void closeAll() throws IOException {
-        in.close();
-        out.close();
+        // in.close();
+        // out.close();
         socket.close();
     }
 }

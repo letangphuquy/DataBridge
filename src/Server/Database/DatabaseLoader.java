@@ -49,7 +49,7 @@ public class DatabaseLoader {
     static void loadUsers() throws SQLException {
         var result = loadDatabase("Recipients");
         for (var args : result) {
-            Data.allReIDs.add(args[0]);
+            Data.allReIDs.add(Long.parseLong(args[0]));
         }
         result = loadDatabase("Users");
         for (var args : result) {

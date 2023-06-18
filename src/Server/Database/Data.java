@@ -19,9 +19,9 @@ public class Data {
     static HashMap<String, ResultSetMetaData> metadataOf = new HashMap<>();
 
     // Users
-    public static Set<String> allReIDs = new HashSet<>();
-    public static HashMap<String,String> usernameToID = new HashMap<String,String>();
-    public static HashMap<String,User> users = new HashMap<String,User>();
+    public static Set<Long> allReIDs = new HashSet<>();
+    public static HashMap<String,Long> usernameToID = new HashMap<String,Long>();
+    public static HashMap<Long,User> users = new HashMap<Long,User>();
     public static HashMap<String,Password> passwordOf = new HashMap<String,Password>();
 
     // Files

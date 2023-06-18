@@ -72,7 +72,7 @@ public class FileProcessor {
                 }
                 System.out.println("File " + file.getName() + " uploaded successfully!");
             }
-        });
+        }, "Upload File " + file.getName());
         uploadFile.start();
         client.independentThreads.add(uploadFile);
     }
