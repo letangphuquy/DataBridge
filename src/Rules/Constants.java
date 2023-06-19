@@ -16,5 +16,8 @@ public class Constants {
 
     //User
     public static final long DEFAULT_ID = Long.MIN_VALUE;
+
+    //Chat
+    public static final int MAX_CHAT_LENGTH = 500;
     
 }

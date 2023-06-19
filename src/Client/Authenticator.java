@@ -25,6 +25,15 @@ public class Authenticator {
         return true;
     }
 
+    //Quick note: "blocking" communication
+    private static void receiveUserData() throws IOException {
+        String response = client.read();
+        String[] parts = response.split((String) Constants.DELIMITER);
+        client.user = new User(parts);
+        client.serverListener.start();
+        //TODO: receive information about friends, chat messages, files, etc.
+    }
+
     /*
      * Note: because user hasn't logged in, we can communicate in a "blocking" way
      * Login procedure:
@@ -51,10 +60,7 @@ public class Authenticator {
         if (isAttemptFailed("Login", parts)) return;
         
         assert ServerCode.ACCEPT.toString().equals(parts[0]);
-        response = client.read();
-        parts = response.split((String) Constants.DELIMITER);
-        client.user = new User(parts);
-        client.serverListener.start();
+        receiveUserData();
     }
 
     /*
@@ -73,9 +79,7 @@ public class Authenticator {
         String hashedPassword = PasswordHasher.hash(password, saltString);
         client.send(hashedPassword);
 
-        response = client.read();
-        parts = response.split((String) Constants.DELIMITER);
-        client.user = new User(parts);
+        receiveUserData();
     }
 
     public static void logout() throws IOException {

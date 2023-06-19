@@ -113,3 +113,6 @@ CREATE TABLE FileLinks
 INSERT INTO Recipients VALUES(1,-1, 'U')
 INSERT INTO Users VALUES(1, 'test', 'I am Groot', 0, 0, 0)
 INSERT INTO Passwords VALUES('test', 'salt', 'hashed_password')
+
+-- Test Serial Number (no need to insert manually)
+-- INSERT INTO Messages(sender, receiver, is_file, sent_at) VALUES(-6715441938218703912, 7179295700910725557, 0x0b, '2023-06-18 18:36:38.173')

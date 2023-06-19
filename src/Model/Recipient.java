@@ -1,16 +1,25 @@
 package Model;
 
+import java.util.ArrayList;
+
 import Rules.Constants;
 
 public class Recipient {
     private long recipientID; 
 	private long publicID; // used for chat, to hide real ID
-    private char type;
+    private char type; // 'U' for user, 'G' for group
+	private ArrayList<Message> messages = new ArrayList<>();
 
     Recipient(char type) {
 		recipientID = publicID = Constants.DEFAULT_ID;
         this.type = type;
     }
+
+	public Recipient(long recipientID, long publicID, char type) {
+		this.recipientID = recipientID;
+		this.publicID = publicID;
+		this.type = type;
+	}
 
 	Recipient(Recipient other) {
 		recipientID = other.recipientID;
@@ -18,17 +27,26 @@ public class Recipient {
 		type = other.type;
 	}
 	
+	public void setIDs(long recipientID, long publicID) {
+		this.recipientID = recipientID;
+		this.publicID = publicID;
+	}
+
+	public void setIDs(Recipient other) {
+		recipientID = other.recipientID;
+		publicID = other.publicID;
+	}
+
 	protected long getRecipientID() {
 		return recipientID;
 	}
 	
+	public void addMessage(Message message) {
+		messages.add(message);
+	}
+	
 	public long getPublicID() {
 		return publicID;
-	}
-
-	public void setIDs(long recipientID, long publicID) {
-		this.recipientID = recipientID;
-		this.publicID = publicID;
 	}
 	public char getType() {
 		return type;
@@ -39,9 +57,7 @@ public class Recipient {
 	}
 
 	protected Recipient getRecipient() {
-		// Solution for the bug found at mentioned in User.java
+		// Solution for the bug found as mentioned in User.java
 		return new Recipient(this);
 	}
-
-
 }

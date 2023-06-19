@@ -35,6 +35,7 @@ public class Authenticator {
         }
         server.send(ServerCode.ACCEPT.toString());
         User user = Data.users.get(userID);
+        ServerThread.activeUsers.put(user, server);
         server.send(user.toString());
         return user;
     }
@@ -57,7 +58,7 @@ public class Authenticator {
         long recipientID = Constants.DEFAULT_ID;
         do {
             recipientID = RandomGenerator.randomID();
-        } while (Data.recipientIDs.contains(recipientID));
+        } while (Data.recipients.containsKey(recipientID));
         long publicID = Constants.DEFAULT_ID;
         do {
             publicID = RandomGenerator.randomPublicID();
@@ -73,6 +74,7 @@ public class Authenticator {
     private static User logout(ServerThread server) {
         //Read "AUTH LOGOUT" and triggered by ServerThread
         FileProcessor.filesOnReceiving.clear();
+        ServerThread.activeUsers.remove(server.user);
         return server.user = null;
     }
 

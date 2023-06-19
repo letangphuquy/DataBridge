@@ -17,7 +17,7 @@ public class FileProcessor {
     private static String D = (String) Constants.DELIMITER;
     private static Client client = Client.instance;
 
-    public static void process(ClientCode.Command command, String[] params) throws IOException {
+    static void process(ClientCode.Command command, String[] params) throws IOException {
         switch (command) {
             case UPLOAD:
                 uploadData(Integer.parseInt(params[0]));
@@ -29,7 +29,7 @@ public class FileProcessor {
         }
     }
 
-    public static void createDirectory(String dirName, String path) throws IOException {
+    static void createDirectory(String dirName, String path) throws IOException {
         Client client = Client.instance;
         client.send(ClientCode.Type.FILE + D + ClientCode.Command.CREATE + D + dirName + D + path);
     }
@@ -38,7 +38,7 @@ public class FileProcessor {
      * 1. Send request (filename)
      * 2. Send file data (in chunks)
      */
-    public static void upload(String srcPath, String destPath) throws IOException {
+    static void upload(String srcPath, String destPath) throws IOException {
         //Initiates upload
         System.out.println("Init uploading " + srcPath + "...");
         File file = new File(srcPath);
@@ -46,7 +46,7 @@ public class FileProcessor {
         client.send(msg + D + file.getName() + D + file.length() + D + destPath + D + client.requests.size());
         client.requests.add(msg + D + srcPath);
     }
-    public static void uploadData(int requestID) throws IOException {
+    static void uploadData(int requestID) throws IOException {
         String info = client.requests.get(requestID);
         String[] infoParts = info.split(D);
         assert ClientCode.Type.FILE.toString().equals(infoParts[0]);
@@ -83,7 +83,7 @@ public class FileProcessor {
      * 2a. Get file metadata (size, name)
      * 2. Receive file data (in chunks)
      */
-    public static void download(String path) throws IOException {
+    static void download(String path) throws IOException {
         String DOWNLOAD_URL = Client.URL + "\\downloads\\";
         Client client = Client.instance;
         client.send(ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD + D + path);

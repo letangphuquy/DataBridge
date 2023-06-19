@@ -15,6 +15,7 @@ public class User extends Recipient {
     private boolean isBanned, isPrivate;
     private int reputation;
 
+	// recipientID/ userID (private): is set automatically in database loading process, or when creating new user
     public User(String username) {
 		super('U');
         this.username = username;
@@ -23,11 +24,10 @@ public class User extends Recipient {
         this.isPrivate = true;
         this.reputation = 0;
     }
-
+	
 	public User(String[] data) {
 		super('U');
-		// System.out.println("User data: " + String.join(Constants.DELIMITER, data));
-		// data[0] is recipientID/ userID (private), and is set automatically in database loading process, or when creating new user
+		// data[0] is recipientID/ userID
 		this.username = data[1];
 		this.profile = data[2];
 		this.isBanned = Boolean.parseBoolean(data[3]);

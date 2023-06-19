@@ -51,25 +51,40 @@ public class DatabaseLoader {
         for (var args : result) {
             long recipientID = Long.parseLong(args[0]);
             long publicID = Long.parseLong(args[1]);
-            Data.recipientIDs.add(recipientID);
+            char type = args[2].charAt(0);
+            Recipient recipient = new Recipient(recipientID, publicID, type);
+            Data.recipients.put(recipientID, recipient);
             Data.publicIDToRecipientID.put(publicID, recipientID);
-            Data.recipientIDToPublicID.put(recipientID, publicID);
         }
         result = loadDatabase("Users");
         for (var args : result) {
             User user = new User(args);
-            long userID = Long.parseLong(args[0]);
-            long publicID = Data.recipientIDToPublicID.get(userID);
-            user.setIDs(userID, publicID);
-            Data.users.put(user.getUserID(), user);
-            Data.usernameToID.put(user.getUsername(), user.getUserID());
+            long userID = user.getUserID();
+            user.setIDs(Data.recipients.get(userID));
+            Data.users.put(userID, user);
+            Data.usernameToID.put(user.getUsername(), userID);
         }
         
         result = loadDatabase("Passwords");
         for (var args : result) {
             Data.passwordOf.put(args[0], new Password(args[0], args[1], args[2]));
         }
+
+        result = loadDatabase("Groups");
+        for (var args : result) {
+            Group group = new Group(args);
+            long groupID = group.getGroupID();
+            group.setIDs(Data.recipients.get(groupID));
+            Data.groups.put(groupID, group);
+        }
      
+        result = loadDatabase("GroupMembership");
+        for (var args : result) {
+            long groupID = Long.parseLong(args[0]);
+            long userID = Long.parseLong(args[1]);
+            Data.groups.get(groupID).addMember(Data.users.get(userID));
+        }
+
         System.out.println("LOAD database:\nUsers: " + Data.users.size() + " users");
         System.out.println("Passwords: " + Data.passwordOf.size() + " passwords");
         for (var entry : Data.passwordOf.entrySet()) {
@@ -108,6 +123,11 @@ public class DatabaseLoader {
     }
 
     static void loadMessages() throws SQLException {
-
+        //TODO: implement, and send data to clients
+        var result = loadDatabase("Messages");
+        for (var args : result) {
+            Message message = new Message(args);
+            Data.recipients.get(message.getReceiverID()).addMessage(message);
+        }
     }
 }
