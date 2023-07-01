@@ -87,9 +87,9 @@ public class Client extends E2ESocket {
             if (flag) {
                 Authenticator.register("test2", "1");
                 Authenticator.login("test2", "1");
-                System.out.println("Logged in: " + user);
+                // System.out.println("Logged in: " + user);
                 // FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
-                Messenger.sendNormalChat("eyyo sing it bro", -6715441938218703912L);
+                Messenger.sendNormalChat("eyyo sing it bro", 4530281956215267098L); //publicID
             } else {
                 Authenticator.register("dsk", "vinataba");
                 Authenticator.login("dsk", "vinataba");

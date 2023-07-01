@@ -26,7 +26,7 @@ public class FileProcessor {
     static HashMap<Integer, FileOutputStream> filesOnReceiving = new HashMap<>();
     static HashMap<Integer, Long> bytesRemaining = new HashMap<>();
 
-    private static String getUserRoot(ServerThread server) {
+    static String getUserRoot(ServerThread server) {
         String root = FILESYSTEM_ROOT + server.user.getUserID() + "\\";
         new File(root).mkdirs();
         return root;

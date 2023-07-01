@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 
 import Rules.Constants;
 
-public class Message {
+public class Message implements DatabaseModel {
     int messageID;
     long senderID, receiverID;
     boolean isFile;
@@ -37,8 +37,25 @@ public class Message {
         return receiverID;
     }
 
+    public int getMessageID() {
+        return messageID;
+    }
+
+    public void setID(int messageID) {
+        this.messageID = messageID;
+    }
+
     @Override
     public String toString() {
         return String.join(Constants.DELIMITER, new String[] {String.valueOf(messageID), String.valueOf(senderID), String.valueOf(receiverID), String.valueOf(isFile), sendTime.toString()});
     }
+
+    @Override
+    public Object[] toObjectArray() {
+        return new Object[] {senderID, receiverID, isFile, sendTime}; // messageID is auto-incremented
+    }
+
+    public Message getMessage() {
+		return new Message(this);
+	}    
 }

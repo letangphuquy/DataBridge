@@ -7,17 +7,24 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import Model.DFile;
+import Model.FileLink;
+import Model.Message;
+import Model.NormalMessage;
 import Model.Password;
+import Model.Recipient;
 import Model.User;
 
 public class DatabaseUpdater {
     private DatabaseUpdater() {}
 
-    private static void addToTable(String tableName, Object[] args) throws SQLException {
+    private static void addToTable(String tableName, Object[] args, String[] columns) throws SQLException {
         Connection connection = DatabaseConnector.getConnection();
         synchronized (connection) {
             int numArgs = args.length;
-            String command = "INSERT INTO " + tableName + " VALUES (" + String.join(",", "?".repeat(numArgs).split("")) + ")";
+            String command = "INSERT INTO " + tableName;
+            if (columns != null)
+                command += " (" + String.join(",", columns) + ") ";
+            command += " VALUES (" + String.join(",", "?".repeat(numArgs).split("")) + ")";
             PreparedStatement statement = connection.prepareStatement(command);
             // ResultSetMetaData metadata = Data.metadataOf.get(tableName);
             for (int i = 0; i < numArgs; i++) {
@@ -41,9 +48,9 @@ public class DatabaseUpdater {
             for (Object arg : args)
                 System.out.print(arg + " ");
             System.out.println();
-            addToTable("Recipients", user.toRecipient().toObjectArray());
-            addToTable("Users", user.toObjectArray());
-            addToTable("Passwords", password.toObjectArray());
+            addToTable("Recipients", user.toRecipient().toObjectArray(), null);
+            addToTable("Users", user.toObjectArray(), null);
+            addToTable("Passwords", password.toObjectArray(), null);
         } catch (SQLException e) {
             System.out.println("Could not add user " + user.getUsername() + " to database");
             e.printStackTrace();
@@ -60,10 +67,47 @@ public class DatabaseUpdater {
             Data.fileTree.get(path).add(file.getFileID());
 
         try {
-            addToTable("Files", file.toObjectArray());
+            addToTable("Files", file.toObjectArray(), null);
         } catch (SQLException e) {
             System.out.println("Could not add file " + file.getFileName() + "(" + file.getFileID() + ") to database");
             e.printStackTrace();
         }
+    }
+
+    private static String[] messageColumns;
+    private static void getMessageColumns() {
+        if (messageColumns != null) return;
+        var metadata = Data.metadataOf.get("Messages");
+        try {
+            messageColumns = new String[metadata.getColumnCount() - 1];
+            for (int i = 0; i < messageColumns.length; i++)
+                messageColumns[i] = metadata.getColumnName(i+2); // skips messageID column
+        } catch (SQLException e) {
+            System.out.println("Error saving message to DB: could not get metadata");
+            e.printStackTrace();
+        }
+    }
+
+    public static void addMessage(Message message) {
+        long receiverID = message.getReceiverID();
+        Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {
+            return recipient.addMessage(message);
+        });
+        getMessageColumns();
+        try {
+            // or else it would be interpreted as a subclass of Message
+            addToTable("Messages", message.getMessage().toObjectArray(), messageColumns);
+            message.setID(++Data.messageID); 
+            if (message instanceof FileLink) {
+                addToTable("FileLinks", ((FileLink) message).toObjectArray(), null);
+            } else {
+                assert(message instanceof NormalMessage);
+                addToTable("NormalMessages", ((NormalMessage) message).toObjectArray(), null);
+            }
+        } catch (SQLException e) {
+            System.out.println("Could not add message " + message + " to database");
+            e.printStackTrace();
+        }
+
     }
 }

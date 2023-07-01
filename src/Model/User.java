@@ -36,7 +36,12 @@ public class User extends Recipient {
 	}
 
     public long getUserID() {
-        return super.getRecipientID();
+		try {
+			return super.getRecipientID();
+		} catch (Exception e) {
+			e.printStackTrace();
+			return Constants.DEFAULT_ID;
+		} 
     }
 
 	public String getUsername() {

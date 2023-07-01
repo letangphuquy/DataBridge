@@ -100,13 +100,13 @@ CREATE TABLE Messages
 
 CREATE TABLE NormalMessages
 (
-	message_id INT IDENTITY(1,1) PRIMARY KEY REFERENCES Messages(message_id) NOT NULL,
+	message_id INT PRIMARY KEY REFERENCES Messages(message_id) NOT NULL,
 	content NVARCHAR(500) NOT NULL,
 )
 
 CREATE TABLE FileLinks
 (
-	message_id INT IDENTITY(1,1) PRIMARY KEY REFERENCES Messages(message_id) NOT NULL,
+	message_id INT PRIMARY KEY REFERENCES Messages(message_id) NOT NULL,
 	file_id CHAR(30) REFERENCES Files(file_id) NOT NULL
 )
 

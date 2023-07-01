@@ -53,13 +53,18 @@ public class DatabaseLoader {
             long publicID = Long.parseLong(args[1]);
             char type = args[2].charAt(0);
             Recipient recipient = new Recipient(recipientID, publicID, type);
+            System.out.println("Recipient " + recipientID + " has publicID " + publicID + " and type " + type);
             Data.recipients.put(recipientID, recipient);
             Data.publicIDToRecipientID.put(publicID, recipientID);
         }
+        
         result = loadDatabase("Users");
         for (var args : result) {
             User user = new User(args);
-            long userID = user.getUserID();
+            long userID = Long.parseLong(args[0]);
+            assert(Data.recipients.containsKey(userID));
+            Recipient recipient = Data.recipients.get(userID);
+            System.out.println(userID + " Got " + recipient);
             user.setIDs(Data.recipients.get(userID));
             Data.users.put(userID, user);
             Data.usernameToID.put(user.getUsername(), userID);
@@ -73,7 +78,7 @@ public class DatabaseLoader {
         result = loadDatabase("Groups");
         for (var args : result) {
             Group group = new Group(args);
-            long groupID = group.getGroupID();
+            long groupID = Long.parseLong(args[0]);
             group.setIDs(Data.recipients.get(groupID));
             Data.groups.put(groupID, group);
         }
@@ -123,11 +128,12 @@ public class DatabaseLoader {
     }
 
     static void loadMessages() throws SQLException {
-        //TODO: implement, and send data to clients
         var result = loadDatabase("Messages");
         for (var args : result) {
             Message message = new Message(args);
             Data.recipients.get(message.getReceiverID()).addMessage(message);
+            Data.messageID = Math.max(Data.messageID, message.getMessageID());
         }
+        //TODO: FileLinks, NormalMessages database needs to be loaded?
     }
 }

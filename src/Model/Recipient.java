@@ -4,13 +4,13 @@ import java.util.ArrayList;
 
 import Rules.Constants;
 
-public class Recipient {
+public class Recipient implements DatabaseModel {
     private long recipientID; 
 	private long publicID; // used for chat, to hide real ID
     private char type; // 'U' for user, 'G' for group
 	private ArrayList<Message> messages = new ArrayList<>();
 
-    Recipient(char type) {
+    public Recipient(char type) {
 		recipientID = publicID = Constants.DEFAULT_ID;
         this.type = type;
     }
@@ -21,7 +21,7 @@ public class Recipient {
 		this.type = type;
 	}
 
-	Recipient(Recipient other) {
+	public Recipient(Recipient other) {
 		recipientID = other.recipientID;
 		publicID = other.publicID;
 		type = other.type;
@@ -37,12 +37,15 @@ public class Recipient {
 		publicID = other.publicID;
 	}
 
-	protected long getRecipientID() {
+	protected long getRecipientID() throws Exception {
+		if (recipientID == Constants.DEFAULT_ID) 
+			throw new Exception("RecipientID not set");
 		return recipientID;
 	}
 	
-	public void addMessage(Message message) {
+	public Recipient addMessage(Message message) {
 		messages.add(message);
+		return this;
 	}
 	
 	public long getPublicID() {

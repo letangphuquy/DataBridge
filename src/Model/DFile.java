@@ -6,7 +6,7 @@ import java.sql.Timestamp;
  * DFile: to distinguish from java.io.File
  * Store file's metadata
  */
-public class DFile {
+public class DFile implements DatabaseModel {
     String fileID, parentID, fileName;
     long uploaderID;
     String notes;

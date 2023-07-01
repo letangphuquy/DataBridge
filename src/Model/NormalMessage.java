@@ -21,4 +21,13 @@ public class NormalMessage extends Message {
     public String toString() {
         return super.toString() + Constants.DELIMITER + content;
     }
+
+    @Override
+    public Object[] toObjectArray() {
+        return new Object[] {messageID, content};
+    }
+
+    // public Message toMessage() {
+    //     return super.getMessage();
+    // }
 }

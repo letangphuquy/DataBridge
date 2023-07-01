@@ -2,6 +2,8 @@ package Model;
 
 import java.util.ArrayList;
 
+import Rules.Constants;
+
 public class Group extends Recipient {
     String name;
     ArrayList<User> members = new ArrayList<>();
@@ -27,6 +29,11 @@ public class Group extends Recipient {
     }
 
     public long getGroupID() {
-        return super.getRecipientID();
+        try {
+            return super.getRecipientID();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return Constants.DEFAULT_ID;
+        }
     }
 }
