@@ -90,7 +90,7 @@ public class User extends Recipient {
 
     @Override
 	public String toString() {
-		return String.join(Constants.DELIMITER, Long.toString(getUserID()), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
+		return String.join(Constants.DELIMITER, Long.toString(getPublicID()), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
 	}
 
 	public Object[] toObjectArray() {

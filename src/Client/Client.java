@@ -10,6 +10,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import Model.E2ESocket;
 import Rules.ClientCode;
@@ -50,27 +51,32 @@ public class Client extends E2ESocket {
                     String msg = read();
                     System.out.println("Received: " + msg);
                     if (msg == null) break;
-                    String[] parts = msg.split(" ");
-                    if (ServerCode.ACCEPT.toString().equals(parts[0])) {
-                        int requestID = Integer.parseInt(parts[1]);
-                        String request = requests.get(requestID);
-                        parts = request.split((String) Constants.DELIMITER);
-                        String type = parts[0];
-                        String command = parts[1];
-                        ClientCode.Type msgType = ClientCode.Type.valueOf(type);
-                        ClientCode.Command msgCommand = ClientCode.Command.valueOf(command);
-                        // parts = Stream.of(parts).skip(2).toArray(String[]::new);
-                        // System.out.println("Debugging:");
-                        // for (String part : parts) System.out.println(part);
-                        switch (msgType) {
-                            case FILE:
-                                FileProcessor.process(msgCommand, new String[] {requestID + ""});
-                                break;
-                            default:
-                                System.out.println("Message type not recognized " + msg);
-                        }
-                        // IMPORTANT: Must not remove requestID from requests here
-                        // requests.remove(requestID);
+                    String[] parts = msg.split((String) Constants.DELIMITER);
+                    switch (ServerCode.valueOf(parts[0])) {
+                        case ACCEPT:
+                            int requestID = Integer.parseInt(parts[1]);
+                            String request = requests.get(requestID);
+                            parts = request.split((String) Constants.DELIMITER);
+                            String type = parts[0];
+                            String command = parts[1];
+                            ClientCode.Type msgType = ClientCode.Type.valueOf(type);
+                            ClientCode.Command msgCommand = ClientCode.Command.valueOf(command);
+                            switch (msgType) {
+                                case FILE:
+                                    FileProcessor.process(msgCommand, new String[] {requestID + ""});
+                                    break;
+                                default:
+                                    System.out.println("Message type not recognized " + msg);
+                            }
+                            // IMPORTANT: Must not remove requestID from requests here, or else all requests will be shifted
+                            // requests.remove(requestID);
+                            break;
+                        case CHAT:
+                            parts = Stream.of(parts).skip(1).toArray(String[]::new);
+                            Messenger.process(parts);
+                            break;
+                        default:
+                            System.out.println("Message type not recognized " + msg);
                     }
                 } catch (IOException e) {
                     System.out.println("Error in listening and processing server's response. Server may be down");
@@ -89,7 +95,8 @@ public class Client extends E2ESocket {
                 Authenticator.login("test2", "1");
                 // System.out.println("Logged in: " + user);
                 // FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
-                Messenger.sendNormalChat("eyyo sing it bro", 4530281956215267098L); //publicID
+                // Messenger.sendNormalChat("eyyo sing it bro", 4530281956215267098L); //publicID
+                Messenger.sendNormalChat("eyyo sing it bro", user.getPublicID()); //publicID
             } else {
                 Authenticator.register("dsk", "vinataba");
                 Authenticator.login("dsk", "vinataba");

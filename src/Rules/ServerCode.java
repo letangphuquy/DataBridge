@@ -17,5 +17,6 @@ package Rules;
 
 public enum ServerCode {
     KEY,
-    ACCEPT, REJECT, DATA, ERROR
+    ACCEPT, REJECT, DATA, ERROR, 
+    CHAT
 }

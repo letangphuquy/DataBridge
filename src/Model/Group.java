@@ -1,6 +1,7 @@
 package Model;
 
 import java.util.ArrayList;
+import java.util.List;
 
 import Rules.Constants;
 
@@ -35,5 +36,9 @@ public class Group extends Recipient {
             e.printStackTrace();
             return Constants.DEFAULT_ID;
         }
+    }
+
+    public List<User> getMembers() {
+        return new ArrayList<User>(members);
     }
 }

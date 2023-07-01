@@ -56,6 +56,7 @@ public class DatabaseLoader {
             System.out.println("Recipient " + recipientID + " has publicID " + publicID + " and type " + type);
             Data.recipients.put(recipientID, recipient);
             Data.publicIDToRecipientID.put(publicID, recipientID);
+            Data.recipientIDToPublicID.put(recipientID, publicID);
         }
         
         result = loadDatabase("Users");

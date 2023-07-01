@@ -30,6 +30,7 @@ public class Authenticator {
         String response = client.read();
         String[] parts = response.split((String) Constants.DELIMITER);
         client.user = new User(parts);
+        client.user.setIDs(Constants.DEFAULT_ID, Long.parseLong(parts[0])); // important for messaging
         client.serverListener.start();
         //TODO: receive information about friends, chat messages, files, etc.
     }

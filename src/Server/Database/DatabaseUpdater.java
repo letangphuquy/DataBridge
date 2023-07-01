@@ -38,7 +38,20 @@ public class DatabaseUpdater {
         }
     }
 
+    private static void addRecipient(Recipient recipient, long recipientID) {
+        Data.recipients.put(recipient.getPublicID(), recipient);
+        Data.publicIDToRecipientID.put(recipient.getPublicID(), recipientID);
+        Data.recipientIDToPublicID.put(recipientID, recipient.getPublicID());
+        try {
+            addToTable("Recipients", recipient.toObjectArray(), null);
+        } catch (SQLException e) {
+            System.out.println("Could not add recipient " + recipient.getPublicID() + " to database");
+            e.printStackTrace();
+        }
+    }
+
     public static void addUser(User user, Password password) {
+        addRecipient(user.toRecipient(), user.getUserID());
         Data.usernameToID.put(user.getUsername(), user.getUserID());
         Data.users.put(user.getUserID(), user);
         Data.passwordOf.put(user.getUsername(), password);
@@ -48,7 +61,6 @@ public class DatabaseUpdater {
             for (Object arg : args)
                 System.out.print(arg + " ");
             System.out.println();
-            addToTable("Recipients", user.toRecipient().toObjectArray(), null);
             addToTable("Users", user.toObjectArray(), null);
             addToTable("Passwords", password.toObjectArray(), null);
         } catch (SQLException e) {

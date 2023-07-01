@@ -35,12 +35,13 @@ public class Authenticator {
         }
         server.send(ServerCode.ACCEPT.toString());
         User user = Data.users.get(userID);
-        ServerThread.activeUsers.put(user, server);
+        ServerThread.activeUsers.put(user.getUserID(), server);
         server.send(user.toString());
         return user;
     }
     /*
      * Register procedure: more or less the same as login
+     * auto login after register
      */
     private static User register(ServerThread server, String username) throws IOException {
         //Read "AUTH REGISTER <username>" and triggered by ServerThread
@@ -67,6 +68,7 @@ public class Authenticator {
         user.setIDs(recipientID, publicID);
         DatabaseUpdater.addUser(user, password);
 
+        ServerThread.activeUsers.put(user.getUserID(), server);
         server.send(user.toString());
         return user;
     }
@@ -74,7 +76,7 @@ public class Authenticator {
     private static User logout(ServerThread server) {
         //Read "AUTH LOGOUT" and triggered by ServerThread
         FileProcessor.filesOnReceiving.clear();
-        ServerThread.activeUsers.remove(server.user);
+        ServerThread.activeUsers.remove(server.user.getUserID());
         return server.user = null;
     }
 

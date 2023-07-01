@@ -11,7 +11,7 @@ import Model.User;
 
 public class ServerThread extends E2ESocket implements Runnable {
     
-    static HashMap<User, ServerThread> activeUsers = new HashMap<>();
+    static HashMap<Long, ServerThread> activeUsers = new HashMap<>();
 
     ServerThread(Socket socket) {
         super(socket, true);

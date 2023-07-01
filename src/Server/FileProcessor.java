@@ -83,7 +83,7 @@ public class FileProcessor {
         }
         filesOnReceiving.put(requestID, new FileOutputStream(file));
         bytesRemaining.put(requestID, fileSize);
-        server.send(ServerCode.ACCEPT.toString() + " " + requestID);
+        server.send(ServerCode.ACCEPT.toString() + D + requestID);
         System.out.println("File " + filename + " accepted. Notified client.");
     }
     

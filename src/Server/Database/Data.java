@@ -21,6 +21,7 @@ public class Data {
     // Users
     public static HashMap<Long, Recipient> recipients = new HashMap<>();
     public static HashMap<Long, Long> publicIDToRecipientID = new HashMap<>();
+    public static HashMap<Long, Long> recipientIDToPublicID = new HashMap<>();
     public static HashMap<String, Long> usernameToID = new HashMap<>();
     public static HashMap<Long, User> users = new HashMap<>();
     public static HashMap<Long, Group> groups = new HashMap<>();
