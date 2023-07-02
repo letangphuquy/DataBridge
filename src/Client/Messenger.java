@@ -29,18 +29,24 @@ public class Messenger {
     }
 
     public static void process(String[] messageParts) {
+        // messageParts[0] is messageID, in the below code I parse each part individually because there isn't any getters yet.
         long senderID = Long.parseLong(messageParts[1]);
         long receiverID = Long.parseLong(messageParts[2]);
         boolean isFile = Boolean.parseBoolean(messageParts[3]);
         Timestamp sendTime = Timestamp.valueOf(messageParts[4]);
         String content = messageParts[5]; // file ID or message content
-        Message message = new Message(senderID, receiverID, isFile, sendTime);
+        Message message = new Message(messageParts); // still using the constructor with messageID
         message = isFile ? new FileLink(message, content) : new NormalMessage(message, content);
         long dialougeID = (receiverID == Client.instance.user.getPublicID()) ? senderID : receiverID; // direct message or group message
         if (!Data.conversations.containsKey(dialougeID)) 
             Data.conversations.put(dialougeID, new ArrayList<>());
         Data.conversations.get(dialougeID).add(message);
         System.out.println("Received message in " + dialougeID + ": " + content + " from " + senderID + " at " + sendTime);
+        //TODO: handle file sharing
+        if (isFile) {
+            System.out.println("File sharing is not supported yet");
+            Data.sharedFiles.put(content, message.getMessageID());
+        }
     }
 
 }

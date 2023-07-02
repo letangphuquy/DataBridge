@@ -3,6 +3,7 @@ package Server.Database;
 import java.sql.Connection;
 import java.sql.Statement;
 import java.util.ArrayList;
+import java.util.stream.Stream;
 
 import Model.*;
 
@@ -13,12 +14,20 @@ import java.sql.SQLException;
 public class DatabaseLoader {
     private DatabaseLoader() {}
 
-    static ArrayList<String[]> loadDatabase(String tableName) {
+    static ArrayList<String[]> loadDatabaseWithOrder(String tableName, String[] orders) {
         Connection connection = DatabaseConnector.getConnection();
         ArrayList<String[]> result = new ArrayList<>();
         try {
             Statement statement = connection.createStatement();
             String command = "SELECT * FROM " + tableName;
+            if (orders != null) {
+                boolean isDesc = orders[0].equals("DESC");
+                if (isDesc) {
+                    orders = Stream.of(orders).skip(1).toArray(String[]::new);
+                }
+                command += " ORDER BY " + String.join(",", orders);
+                if (isDesc) command += " DESC";
+            }
             ResultSet resultSet = statement.executeQuery(command);
 
             ResultSetMetaData metadata = resultSet.getMetaData();
@@ -38,6 +47,9 @@ public class DatabaseLoader {
             e.printStackTrace();
         }
         return result;
+    }
+    static ArrayList<String[]> loadDatabase(String tableName) {
+        return loadDatabaseWithOrder(tableName, null);
     }
 
     public static void loadAll() throws SQLException {
@@ -99,17 +111,18 @@ public class DatabaseLoader {
     }
 
     private static void dfs(String node, String path) {
-        if (!Data.fileTree.containsKey(node)) return ;
         Data.pathToID.put(path, node);
         Data.idToPath.put(node, path);
         System.out.println("File " + node + " has path " + path);
-        for (String child : Data.fileTree.get(node)) {
-            dfs(child, path + "\\" + Data.files.get(child).getFileName());
+        if (Data.fileTree.containsKey(node)) {
+            for (String child : Data.fileTree.get(node)) {
+                dfs(child, path + "\\" + Data.files.get(child).getFileName());
+            }
         }
     }
 
     static void loadFiles() throws SQLException {
-        var result = loadDatabase("Files");
+        var result = loadDatabaseWithOrder("Files", new String[]{"created_at"});
         ArrayList<String> roots = new ArrayList<>();
         for (var args : result) {
             DFile file = new DFile(args);
@@ -119,7 +132,10 @@ public class DatabaseLoader {
                     Data.fileTree.put(parent, new ArrayList<>());
                 Data.fileTree.get(parent).add(file.getFileID());
             }
-            else roots.add(file.getFileID());
+            else {
+                System.out.println("Root file " + file.getFileID() + " has uploader " + file.getUploaderID() + " and name " + file.getFileName());
+                roots.add(file.getFileID());
+            }
             Data.files.put(file.getFileID(), file);
         }
         for (String root : roots) {
@@ -129,7 +145,7 @@ public class DatabaseLoader {
     }
 
     static void loadMessages() throws SQLException {
-        var result = loadDatabase("Messages");
+        var result = loadDatabaseWithOrder("Messages", new String[]{"sent_at"});
         for (var args : result) {
             Message message = new Message(args);
             Data.recipients.get(message.getReceiverID()).addMessage(message);

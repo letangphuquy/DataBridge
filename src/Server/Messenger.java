@@ -73,7 +73,8 @@ public class Messenger {
         
     private static Message receiveFileChat(ServerThread server, Message message, String filepath) {
         filepath = FileProcessor.getUserRoot(server) + filepath;
-        FileLink fileLink = new FileLink(message, filepath);
+        String fileID = Data.pathToID.get(filepath);
+        FileLink fileLink = new FileLink(message, fileID);
         return fileLink;
     }
 }

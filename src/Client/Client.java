@@ -49,31 +49,55 @@ public class Client extends E2ESocket {
                 System.out.println("\tListener running");
                 try {
                     String msg = read();
-                    System.out.println("Received: " + msg);
                     if (msg == null) break;
-                    String[] parts = msg.split((String) Constants.DELIMITER);
-                    switch (ServerCode.valueOf(parts[0])) {
+                    String displayMsg = msg.length() > 100 ? msg.substring(0, 100) + "..." : msg;
+                    System.out.println("Received: " + displayMsg);
+                    String[] responseParts = msg.split((String) Constants.DELIMITER);
+                    String response = responseParts[0];
+
+                    int requestID = -1;
+                    String request, requestParts[] = null, type, command;
+                    ClientCode.Type reqType = ClientCode.Type.AUTH;
+                    ClientCode.Command reqCommand = ClientCode.Command.LOGOUT;
+                    
+                    if (!ServerCode.CHAT.toString().equals(responseParts[0])) {
+                        requestID = Integer.parseInt(responseParts[1]);
+                        request = requests.get(requestID);
+                        requestParts = request.split((String) Constants.DELIMITER);
+                        type = requestParts[0];
+                        command = requestParts[1];
+                        reqType = ClientCode.Type.valueOf(type);
+                        reqCommand = ClientCode.Command.valueOf(command);
+                        requestParts = Stream.of(requestParts).skip(2).toArray(String[]::new);
+                        responseParts = Stream.of(responseParts).skip(2).toArray(String[]::new);
+                    }
+                    System.out.println("Hello " + ServerCode.valueOf(response));
+                    switch (ServerCode.valueOf(response)) {
                         case ACCEPT:
-                            int requestID = Integer.parseInt(parts[1]);
-                            String request = requests.get(requestID);
-                            parts = request.split((String) Constants.DELIMITER);
-                            String type = parts[0];
-                            String command = parts[1];
-                            ClientCode.Type msgType = ClientCode.Type.valueOf(type);
-                            ClientCode.Command msgCommand = ClientCode.Command.valueOf(command);
-                            switch (msgType) {
+                            switch (reqType) {
                                 case FILE:
-                                    FileProcessor.process(msgCommand, new String[] {requestID + ""});
+                                    FileProcessor.process(reqCommand, requestID, responseParts);
                                     break;
                                 default:
-                                    System.out.println("Message type not recognized " + msg);
+                                    System.out.println("Message type not recognized " + reqType);
                             }
                             // IMPORTANT: Must not remove requestID from requests here, or else all requests will be shifted
                             // requests.remove(requestID);
                             break;
+                        case REJECT:
+                            System.out.println("Request rejected");
+                            break;
+                        case DATA:
+                            switch (reqType) {
+                                case FILE:
+                                    FileProcessor.process(reqCommand, requestID, responseParts);
+                                    break;
+                                default: ;
+                            }
+                            break;
                         case CHAT:
-                            parts = Stream.of(parts).skip(1).toArray(String[]::new);
-                            Messenger.process(parts);
+                            responseParts = Stream.of(responseParts).skip(1).toArray(String[]::new);
+                            Messenger.process(responseParts);
                             break;
                         default:
                             System.out.println("Message type not recognized " + msg);
@@ -96,7 +120,8 @@ public class Client extends E2ESocket {
                 // System.out.println("Logged in: " + user);
                 // FileProcessor.upload("E:/LQDOJ/translate-cp-handbook/book.pdf", "");
                 // Messenger.sendNormalChat("eyyo sing it bro", 4530281956215267098L); //publicID
-                Messenger.sendNormalChat("eyyo sing it bro", user.getPublicID()); //publicID
+                // Messenger.sendNormalChat("eyyo sing it bro", user.getPublicID()); //publicID
+                FileProcessor.download("book.pdf");
             } else {
                 Authenticator.register("dsk", "vinataba");
                 Authenticator.login("dsk", "vinataba");
@@ -105,10 +130,9 @@ public class Client extends E2ESocket {
                 FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
                 // FileProcessor.download("in1\\in2\\in3\\independent_test.java");
             }
-            Authenticator.logout();
-
-            closeAll();
-            System.out.println("Done, closed all");
+            // Authenticator.logout();
+            // closeAll();
+            // System.out.println("Done, closed all");
         } catch (IOException e) {
             System.out.println("Error login-ing");
             debug(e);

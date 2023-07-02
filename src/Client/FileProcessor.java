@@ -5,11 +5,11 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.HashMap;
 
 import Model.TypesConverter;
 import Rules.ClientCode;
 import Rules.Constants;
-import Rules.ServerCode;
 
 public class FileProcessor {
     private FileProcessor() {}
@@ -17,12 +17,22 @@ public class FileProcessor {
     private static String D = (String) Constants.DELIMITER;
     private static Client client = Client.instance;
 
-    static void process(ClientCode.Command command, String[] params) throws IOException {
+    final static String DOWNLOAD_URL = Client.URL + "downloads\\";
+    static HashMap<Integer, FileOutputStream> filesOnReceiving = new HashMap<>();
+    static HashMap<Integer, Long> bytesRemaining = new HashMap<>();
+
+    static void process(ClientCode.Command command, int requestID, String[] params) throws IOException {
         switch (command) {
             case UPLOAD:
-                uploadData(Integer.parseInt(params[0]));
+                uploadData(requestID);
                 break;
             case DOWNLOAD:
+                try {
+                    long fileSize = Long.parseLong(params[0]);
+                    downloadSetup(requestID, fileSize);
+                } catch (Exception e) {
+                    downloadData(requestID, params[0]);
+                }
                 break;
             default:
                 break;
@@ -52,7 +62,7 @@ public class FileProcessor {
         assert ClientCode.Type.FILE.toString().equals(infoParts[0]);
         assert ClientCode.Command.UPLOAD.toString().equals(infoParts[1]);
         String srcPath = infoParts[2];
-        final String msgPrefix = ClientCode.Type.FILE + D + ClientCode.Command.UPLOAD + D + requestID; // can't reuse info because it's contains srcPath, which is not needed here
+        final String msgPrefix = ClientCode.Type.FILE + D + ClientCode.Command.UPLOAD + D + requestID + D; // can't reuse info because it's contains srcPath, which is not needed here
         File file = new File(srcPath);
         System.out.println("Uploading " + file.getName() + "...");
         Thread uploadFile = new Thread(new Runnable() {
@@ -63,7 +73,7 @@ public class FileProcessor {
                     int bytesRead = 0;
                     
                     while ((bytesRead = fileReader.read(buffer)) != -1) {
-                        String msg = msgPrefix + D + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead));
+                        String msg = msgPrefix + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead));
                         client.send(msg);
                     }
                 } catch (IOException e) {
@@ -83,37 +93,41 @@ public class FileProcessor {
      * 2a. Get file metadata (size, name)
      * 2. Receive file data (in chunks)
      */
-    static void download(String path) throws IOException {
-        String DOWNLOAD_URL = Client.URL + "\\downloads\\";
-        Client client = Client.instance;
-        client.send(ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD + D + path);
+    static void download(String filepath) throws IOException {
+        //Initiates download
+        String prefix = ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD;
+        client.send(prefix + D + filepath + D + client.requests.size());
+        client.requests.add(prefix + D + filepath);
+    }
 
-        String response = client.read();
-        System.out.println(response);
-        String[] parts = response.split(D);
-        if (!ServerCode.ACCEPT.toString().equals(parts[0])) {
-            System.out.println("Download failed: " + response);
+    static void downloadSetup(int requestID, long fileSize) throws IOException {
+        String filepath = client.requests.get(requestID).split(D)[2];
+        filepath = DOWNLOAD_URL + filepath;
+        File file = new File(filepath);
+        file.getParentFile().mkdirs();
+        if (file.exists()) {
+            System.out.println("File " + filepath + " already exists! Not downloading again.");
             return ;
         }
+        file.createNewFile();
+        filesOnReceiving.put(requestID, new FileOutputStream(file));
+        bytesRemaining.put(requestID, fileSize);
+        client.send(ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD + D + requestID);
+    }
 
-        response = client.read();
-        System.out.println(response);
-        parts = response.split(D);
-        String filename = parts[0];
-        long fileSize = Long.parseLong(parts[1]);
-        
-        new File(DOWNLOAD_URL).mkdirs();
-        File file = new File(DOWNLOAD_URL + filename);
-        if (!file.exists()) file.createNewFile();
+    static void downloadData(int requestID, String data) throws IOException {
+        var fileWriter = filesOnReceiving.get(requestID);
+        long remainingCount = bytesRemaining.get(requestID);
+        byte[] buffer = TypesConverter.stringToBytes(data);
+        long bytesReceived = buffer.length;
+        fileWriter.write(buffer);
 
-        try (FileOutputStream fileWriter = new FileOutputStream(file)) {
-            long bytesReceived = 0;
-            while (bytesReceived < fileSize) {
-                byte[] buffer = null;// = client.readBytes();
-                fileWriter.write(buffer);
-                bytesReceived += buffer.length;
-            }
+        if ((remainingCount -= bytesReceived) <= 0) {
+            fileWriter.close();
+            filesOnReceiving.remove(requestID);
+            bytesRemaining.remove(requestID);
+            System.out.println("File received successfully");
         }
-        System.out.println("File " + filename + " downloaded successfully!");
+        else bytesRemaining.put(requestID, remainingCount);
     }
 }

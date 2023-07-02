@@ -17,7 +17,7 @@ import Model.User;
 public class DatabaseUpdater {
     private DatabaseUpdater() {}
 
-    private static void addToTable(String tableName, Object[] args, String[] columns) throws SQLException {
+    private static void addToTableWithColumns(String tableName, Object[] args, String[] columns) throws SQLException {
         Connection connection = DatabaseConnector.getConnection();
         synchronized (connection) {
             int numArgs = args.length;
@@ -38,12 +38,16 @@ public class DatabaseUpdater {
         }
     }
 
+    private static void addToTable(String tableName, Object[] args) throws SQLException {
+        addToTableWithColumns(tableName, args, null);
+    }
+
     private static void addRecipient(Recipient recipient, long recipientID) {
         Data.recipients.put(recipient.getPublicID(), recipient);
         Data.publicIDToRecipientID.put(recipient.getPublicID(), recipientID);
         Data.recipientIDToPublicID.put(recipientID, recipient.getPublicID());
         try {
-            addToTable("Recipients", recipient.toObjectArray(), null);
+            addToTable("Recipients", recipient.toObjectArray());
         } catch (SQLException e) {
             System.out.println("Could not add recipient " + recipient.getPublicID() + " to database");
             e.printStackTrace();
@@ -61,8 +65,8 @@ public class DatabaseUpdater {
             for (Object arg : args)
                 System.out.print(arg + " ");
             System.out.println();
-            addToTable("Users", user.toObjectArray(), null);
-            addToTable("Passwords", password.toObjectArray(), null);
+            addToTable("Users", user.toObjectArray());
+            addToTable("Passwords", password.toObjectArray());
         } catch (SQLException e) {
             System.out.println("Could not add user " + user.getUsername() + " to database");
             e.printStackTrace();
@@ -79,7 +83,7 @@ public class DatabaseUpdater {
             Data.fileTree.get(path).add(file.getFileID());
 
         try {
-            addToTable("Files", file.toObjectArray(), null);
+            addToTable("Files", file.toObjectArray());
         } catch (SQLException e) {
             System.out.println("Could not add file " + file.getFileName() + "(" + file.getFileID() + ") to database");
             e.printStackTrace();
@@ -108,13 +112,13 @@ public class DatabaseUpdater {
         getMessageColumns();
         try {
             // or else it would be interpreted as a subclass of Message
-            addToTable("Messages", message.getMessage().toObjectArray(), messageColumns);
+            addToTableWithColumns("Messages", message.getMessage().toObjectArray(), messageColumns);
             message.setID(++Data.messageID); 
             if (message instanceof FileLink) {
-                addToTable("FileLinks", ((FileLink) message).toObjectArray(), null);
+                addToTable("FileLinks", ((FileLink) message).toObjectArray());
             } else {
                 assert(message instanceof NormalMessage);
-                addToTable("NormalMessages", ((NormalMessage) message).toObjectArray(), null);
+                addToTable("NormalMessages", ((NormalMessage) message).toObjectArray());
             }
         } catch (SQLException e) {
             System.out.println("Could not add message " + message + " to database");

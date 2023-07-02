@@ -11,19 +11,28 @@ import Server.Database.Data;
 import Server.Database.DatabaseUpdater;
 public class Authenticator {
     private Authenticator() {}
+    private static void onLogin(ServerThread server, User user) throws IOException {
+        //TODO: send user data
+        server.user = user;
+        ServerThread.activeUsers.put(user.getUserID(), server);
+        server.send(ServerCode.ACCEPT.toString()); //sending ACCEPT to differs from REJECT in case of wrong password
+        server.send(user.toString());
+    }
+
     /*
      * Login procedure:
      * 1. Check for sent username's existence
      * 2. Send salt
      * 3. Receive hashed password, verify
      * 4. Send user data (if success)
+     * Important note: allow "blocking" communication
      */
     // private static String D = (String) Constants.DELIMITER;
-    private static User login(ServerThread server, String username) throws IOException {
+    private static void login(ServerThread server, String username) throws IOException {
         //Read "AUTH LOGIN <username>" and triggered by ServerThread
         if (!Data.usernameToID.containsKey(username)) {
             server.send(ServerCode.REJECT + " username not exists");
-            return null;
+            return ;
         }
         long userID = Data.usernameToID.get(username);
         Password password = Data.passwordOf.get(username);
@@ -31,23 +40,20 @@ public class Authenticator {
         String hashedPassword = server.read();
         if (!password.verify(hashedPassword)) {
             server.send(ServerCode.REJECT + " wrong password");
-            return null;
+            return ;
         }
-        server.send(ServerCode.ACCEPT.toString());
         User user = Data.users.get(userID);
-        ServerThread.activeUsers.put(user.getUserID(), server);
-        server.send(user.toString());
-        return user;
+        onLogin(server, user);
     }
     /*
      * Register procedure: more or less the same as login
      * auto login after register
      */
-    private static User register(ServerThread server, String username) throws IOException {
+    private static void register(ServerThread server, String username) throws IOException {
         //Read "AUTH REGISTER <username>" and triggered by ServerThread
         if (Data.usernameToID.containsKey(username)) {
             server.send(ServerCode.REJECT + " username already exists");
-            return null;
+            return ;
         }
         byte[] salt = RandomGenerator.randomSalt();
         String saltString = TypesConverter.bytesToString(salt);
@@ -68,33 +74,32 @@ public class Authenticator {
         user.setIDs(recipientID, publicID);
         DatabaseUpdater.addUser(user, password);
 
-        ServerThread.activeUsers.put(user.getUserID(), server);
-        server.send(user.toString());
-        return user;
+        onLogin(server, user);
     }
 
-    private static User logout(ServerThread server) {
+    private static void logout(ServerThread server) {
         //Read "AUTH LOGOUT" and triggered by ServerThread
         FileProcessor.filesOnReceiving.clear();
         ServerThread.activeUsers.remove(server.user.getUserID());
-        return server.user = null;
+        server.user = null;
     }
 
-    public static User process(ServerThread serverThread, ClientCode.Command command, String[] params) {
+    public static void process(ServerThread serverThread, ClientCode.Command command, String[] params) {
         try {
             switch (command) {
                 case LOGIN:
-                    return login(serverThread, params[0]);
+                    login(serverThread, params[0]);
+                    break;
                 case REGISTER:
-                    return register(serverThread, params[0]);
+                    register(serverThread, params[0]);
+                    break;
                 case LOGOUT:
-                    return logout(serverThread);
-                default:
-                    return null;
+                    logout(serverThread);
+                    break;
+                default:;
             }
         } catch (IOException e) {
             e.printStackTrace();
         }
-        return null;
     }
 }

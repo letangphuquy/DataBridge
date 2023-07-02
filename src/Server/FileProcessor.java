@@ -2,9 +2,11 @@ package Server;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.sql.Timestamp;
+import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -25,6 +27,7 @@ public class FileProcessor {
 
     static HashMap<Integer, FileOutputStream> filesOnReceiving = new HashMap<>();
     static HashMap<Integer, Long> bytesRemaining = new HashMap<>();
+    static HashMap<Integer, String> filesOnSending = new HashMap<>();
 
     static String getUserRoot(ServerThread server) {
         String root = FILESYSTEM_ROOT + server.user.getUserID() + "\\";
@@ -101,38 +104,53 @@ public class FileProcessor {
             System.out.println("File received successfully");
         }
         else bytesRemaining.put(requestID, remainingCount);
-        // TODO: Consider implementing Producer-Consumer pattern
     }
+
     /*
      * Send procedure:
      * 1. Verify file existence
      * 2. Send file info
      * 3. Send file data (in chunks of 8KB)
+     * Question: Sending file data right after sending metadata? Need acknowledgement from client?
      */
-    private static void sendFile(ServerThread server, String path) throws IOException {
-        path = getUserRoot(server) + path;
+    private static void sendFile(ServerThread server, String[] params) throws IOException {
+        String path = server.user.getUserID() + "\\" + params[0];
+        int requestID = Integer.parseInt(params[1]);
         System.out.println("Getting file " + path);
         DFile dFile = Data.files.get(Data.pathToID.get(path));
         if (dFile == null) {
-            server.send(ServerCode.REJECT + D + "filepath not found");
+            server.send(ServerCode.REJECT + D + requestID + D + "filepath not found");
             return;
         }
+        path = getUserRoot(server) + params[0];
         File file = new File(path);
         if (!file.exists()) {
-            server.send(ServerCode.ERROR + D + "file not found in server");
+            server.send(ServerCode.REJECT + D + requestID + D + "file not found in server");
             return;
         }
+        server.send(ServerCode.ACCEPT + D + requestID + D + file.length());
+        filesOnSending.put(requestID, path);
+    }
 
-        server.send(ServerCode.ACCEPT.toString());
-        long fileSize = file.length();
-        server.send(file.getName() + D + fileSize);
-
-        try (FileInputStream fileReader = new FileInputStream(file)) {
-            int bytesRead = 0;
-            while ((bytesRead = fileReader.read(buffer)) != -1)  {
-                // server.sendBytes(buffer, bytesRead);
+    private static void sendFileData(ServerThread server, int requestID) throws FileNotFoundException, IOException {
+        String path = filesOnSending.get(requestID);
+        File file = new File(path);
+        final String msgPrefix = ServerCode.DATA + D + requestID + D;
+        Thread sendFile = new Thread( new Runnable() {
+            @Override
+            public void run() {
+                try (FileInputStream fileReader = new FileInputStream(file)) {
+                    int bytesRead = 0;
+                    while ((bytesRead = fileReader.read(buffer)) != -1)  {
+                        server.send(msgPrefix + TypesConverter.bytesToString(Arrays.copyOf(buffer, bytesRead)));
+                    }
+                } catch (IOException e) {
+                    System.out.println("Error sending file " + path + " to client");
+                    e.printStackTrace();
+                }
             }
-        }
+        }, "Send File " + path);
+        sendFile.start();
     }
     
     public static void process(ServerThread serverThread, ClientCode.Command command, String[] params) {
@@ -142,11 +160,16 @@ public class FileProcessor {
                     createDirectory(serverThread, params[0], getUserRoot(serverThread) + params[1]);
                     break;
                 case UPLOAD:
-                    if (params.length == 2) receiveFileData(Integer.parseInt(params[0]), params[1]);
-                    else receiveFile(serverThread, params);
+                    if (params.length == 2) 
+                        receiveFileData(Integer.parseInt(params[0]), params[1]);
+                    else 
+                        receiveFile(serverThread, params);
                     break;
                 case DOWNLOAD:
-                    sendFile(serverThread, params[0]);
+                    if (params.length == 2)
+                        sendFile(serverThread, params);
+                    else
+                        sendFileData(serverThread, Integer.parseInt(params[0]));
                     break;
                 default:
                     break;

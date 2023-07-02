@@ -80,6 +80,10 @@ public class Authenticator {
         String hashedPassword = PasswordHasher.hash(password, saltString);
         client.send(hashedPassword);
 
+        response = client.read();
+        parts = response.split(" ");
+        assert ServerCode.ACCEPT.toString().equals(parts[0]);
+        
         receiveUserData();
     }
 

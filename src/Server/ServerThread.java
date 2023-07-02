@@ -7,7 +7,6 @@ import java.util.HashMap;
 import java.util.stream.Stream;
 
 import Model.E2ESocket;
-import Model.User;
 
 public class ServerThread extends E2ESocket implements Runnable {
     
@@ -32,7 +31,7 @@ public class ServerThread extends E2ESocket implements Runnable {
                 parts = Stream.of(parts).skip(2).toArray(String[]::new);
                 switch (ClientCode.Type.valueOf(type)) {
                     case AUTH:
-                        user = Authenticator.process(this, command, parts);
+                        Authenticator.process(this, command, parts);
                         System.out.println("Query result: " + user);
                         break;
                     case USER:
