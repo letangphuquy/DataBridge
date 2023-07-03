@@ -25,6 +25,7 @@ public class Messenger {
     }
 
     public static void sendFileChat(String filePath, long receiverID) throws IOException {
+        filePath = filePath.replace("/", "\\"); // for Windows
         send(filePath, receiverID, true);
     }
 

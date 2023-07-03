@@ -38,7 +38,9 @@ public class Messenger {
         parts[1] = Data.recipientIDToPublicID.get(Long.parseLong(parts[1])).toString(); // sender ID
         parts[2] = Data.recipientIDToPublicID.get(Long.parseLong(parts[2])).toString(); // receiver ID
         
-        ServerThread.activeUsers.get(userID).send(ServerCode.CHAT + D + String.join(D, parts));
+        ServerThread server = ServerThread.activeUsers.get(userID);
+        if (server != null)
+            server.send(ServerCode.CHAT + D + String.join(D, parts));
     }
 
     private static void receiveChat(ServerThread server, String[] params) throws IOException {
@@ -72,8 +74,9 @@ public class Messenger {
     }
         
     private static Message receiveFileChat(ServerThread server, Message message, String filepath) {
-        filepath = FileProcessor.getUserRoot(server) + filepath;
+        filepath = server.user.getUserID() + "\\" + filepath;
         String fileID = Data.pathToID.get(filepath);
+        System.out.println("From filepath " + filepath + " got file ID " + fileID);
         FileLink fileLink = new FileLink(message, fileID);
         return fileLink;
     }

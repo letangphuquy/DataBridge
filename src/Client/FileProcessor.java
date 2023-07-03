@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.stream.Stream;
 
 import Model.Message;
 import Model.TypesConverter;
@@ -41,6 +42,7 @@ public class FileProcessor {
     }
 
     static void createDirectory(String dirName, String path) throws IOException {
+        path = path.replace("/", "\\");
         Client client = Client.instance;
         client.send(ClientCode.Type.FILE + D + ClientCode.Command.CREATE + D + dirName + D + path);
     }
@@ -51,6 +53,7 @@ public class FileProcessor {
      */
     static void upload(String srcPath, String destPath) throws IOException {
         //Initiates upload
+        destPath = destPath.replace("/", "\\");
         System.out.println("Init uploading " + srcPath + "...");
         File file = new File(srcPath);
         String msg = ClientCode.Type.FILE + D + ClientCode.Command.UPLOAD; 
@@ -99,18 +102,35 @@ public class FileProcessor {
         // the argument can also be a message ID (FileLink)
         String prefix = ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD;
         client.send(prefix + D + filepath + D + client.requests.size());
-        if (filepath instanceof String)
+        if (filepath instanceof String) {
+            filepath = filepath.toString().replace("/", "\\");
             client.requests.add(prefix + D + filepath);
+        }
         else {
             assert filepath instanceof Integer;
             Message message = Data.sharedFiles.get((int) filepath);
+            System.out.println("Downloading " + message + "...");
             client.requests.add(prefix + D + message);
         }
     }
 
     static void downloadSetup(int requestID, long fileSize) throws IOException {
-        String filepath = client.requests.get(requestID).split(D)[2];
+        //TODO: resolve naming conflicts
+        String[] requestParts = client.requests.get(requestID).split(D);
+        requestParts = Stream.of(requestParts).skip(2).toArray(String[]::new); // remove prefix (Type, Command
+        String filepath;
+        System.out.println("Need to handle this");
+        for (String part : requestParts) {
+            System.out.println(part);
+        }
+        if (requestParts.length == 1) 
+            filepath = requestParts[0];
+        else {
+            int messageID = Integer.parseInt(requestParts[0]);
+            filepath = String.valueOf(Messenger.getDialougeID(Data.sharedFiles.get(messageID))) + "\\" + "temp";
+        }
         filepath = DOWNLOAD_URL + filepath;
+        System.out.println("Downloading to " + filepath);
         File file = new File(filepath);
         file.getParentFile().mkdirs();
         if (file.exists()) {

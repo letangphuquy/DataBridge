@@ -111,6 +111,7 @@ public class DatabaseUpdater {
             addToTableWithColumns("Messages", message.getMessage().toObjectArray(), messageColumns);
             message.setID(++Data.messageID); // only set ID after adding to DB
             if (message instanceof FileLink) {
+                System.out.println("It was " + ((FileLink) message).getFileID());
                 addToTable("FileLinks", ((FileLink) message).toObjectArray());
             } else {
                 assert(message instanceof NormalMessage);
