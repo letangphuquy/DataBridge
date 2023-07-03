@@ -11,6 +11,8 @@ import java.util.Date;
 import java.util.HashMap;
 
 import Model.DFile;
+import Model.FileLink;
+import Model.Message;
 import Model.RandomGenerator;
 import Model.TypesConverter;
 import Rules.ClientCode;
@@ -114,18 +116,40 @@ public class FileProcessor {
      * Question: Sending file data right after sending metadata? Need acknowledgement from client?
      */
     private static void sendFile(ServerThread server, String[] params) throws IOException {
-        String path = server.user.getUserID() + "\\" + params[0];
         int requestID = Integer.parseInt(params[1]);
-        System.out.println("Getting file " + path);
-        DFile dFile = Data.files.get(Data.pathToID.get(path));
-        if (dFile == null) {
-            server.send(ServerCode.REJECT + D + requestID + D + "filepath not found");
-            return;
+        final String prefix = ServerCode.REJECT + D + requestID + D;
+        String path = null;
+        DFile dFile = null;
+        try {
+            int messageID = Integer.parseInt(params[0]);
+            Message message = Data.messages.get(messageID);
+            if (!(message instanceof FileLink)) {
+                server.send(prefix + "message is not a file link");
+                return;
+            }
+            if (!Messenger.checkUserReceivedMessage(server.user.getUserID(), message)) {
+                server.send(prefix + "unallowed access to file");
+                return;
+            }
+            FileLink fileLink = (FileLink) message;
+            String fileID = fileLink.getFileID();
+            path = Data.idToPath.get(fileID);
+            dFile = Data.files.get(fileID);
+        } catch (Exception e) {
+            path = server.user.getUserID() + "\\" + params[0];
+            dFile = Data.files.get(Data.pathToID.get(path));
+        } finally {
+            if (dFile == null) {
+                server.send(prefix + "filepath not found");
+                return;
+            }
         }
-        path = getUserRoot(server) + params[0];
+        path = FILESYSTEM_ROOT + path;
+        System.out.println("Getting file " + path);
+        
         File file = new File(path);
         if (!file.exists()) {
-            server.send(ServerCode.REJECT + D + requestID + D + "file not found in server");
+            server.send(prefix + "file not found in server");
             return;
         }
         server.send(ServerCode.ACCEPT + D + requestID + D + file.length());
@@ -175,7 +199,8 @@ public class FileProcessor {
                     break;
             }
         } catch (Exception e) {
-
+            System.out.println("Error processing command " + command + " with params " + Arrays.toString(params));
+            e.printStackTrace();
         }
     }
 }

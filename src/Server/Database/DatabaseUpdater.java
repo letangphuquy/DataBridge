@@ -105,15 +105,11 @@ public class DatabaseUpdater {
     }
 
     public static void addMessage(Message message) {
-        long receiverID = message.getReceiverID();
-        Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {
-            return recipient.addMessage(message);
-        });
         getMessageColumns();
         try {
             // or else it would be interpreted as a subclass of Message
             addToTableWithColumns("Messages", message.getMessage().toObjectArray(), messageColumns);
-            message.setID(++Data.messageID); 
+            message.setID(++Data.messageID); // only set ID after adding to DB
             if (message instanceof FileLink) {
                 addToTable("FileLinks", ((FileLink) message).toObjectArray());
             } else {
@@ -125,5 +121,10 @@ public class DatabaseUpdater {
             e.printStackTrace();
         }
 
+        Data.messages.put(message.getMessageID(), message);
+        long receiverID = message.getReceiverID();
+        Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {
+            return recipient.addMessage(message);
+        });
     }
 }

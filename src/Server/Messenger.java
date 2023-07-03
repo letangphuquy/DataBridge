@@ -77,4 +77,11 @@ public class Messenger {
         FileLink fileLink = new FileLink(message, fileID);
         return fileLink;
     }
+
+    public static boolean checkUserReceivedMessage(long userID, Message message) {
+        Recipient receiver = Data.recipients.get(message.getReceiverID());
+        if (receiver.getType() == 'U')
+            return (message.getReceiverID() == userID);
+        return ((Group) receiver).hasMember(userID);
+    }
 }

@@ -148,9 +148,23 @@ public class DatabaseLoader {
         var result = loadDatabaseWithOrder("Messages", new String[]{"sent_at"});
         for (var args : result) {
             Message message = new Message(args);
+            Data.messages.put(message.getMessageID(), message);
             Data.recipients.get(message.getReceiverID()).addMessage(message);
             Data.messageID = Math.max(Data.messageID, message.getMessageID());
         }
-        //TODO: FileLinks, NormalMessages database needs to be loaded?
+        
+        result = loadDatabase("FileLinks");
+        for (var args : result) {
+            int messageID = Integer.parseInt(args[0]);
+            String fileID = args[1];
+            Data.messages.compute(messageID, (Integer msgID, Message msg) -> new FileLink(msg, fileID));
+        }
+
+        result = loadDatabase("NormalMessages");
+        for (var args : result) {
+            int messageID = Integer.parseInt(args[0]);
+            String content = args[1];
+            Data.messages.compute(messageID, (Integer msgID, Message msg) -> new NormalMessage(msg, content));
+        }
     }
 }

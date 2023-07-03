@@ -36,6 +36,10 @@ public class Message implements DatabaseModel {
     public long getReceiverID() {
         return receiverID;
     }
+    
+    public long getSenderID() {
+        return senderID;
+    }  
 
     public int getMessageID() {
         return messageID;
@@ -57,5 +61,5 @@ public class Message implements DatabaseModel {
 
     public Message getMessage() {
 		return new Message(this);
-	}    
+	}  
 }

@@ -6,6 +6,7 @@ import java.util.HashMap;
 
 import Model.DFile;
 import Model.Group;
+import Model.Message;
 import Model.Password;
 import Model.Recipient;
 import Model.User;
@@ -33,6 +34,7 @@ public class Data {
     public static HashMap<String, String> pathToID = new HashMap<>();
     public static HashMap<String, ArrayList<String>> fileTree = new HashMap<>();
 
-    // Messages are stored directly in object (Recipient)
+    // Messages are also stored directly in object (Recipient)
     public static int messageID = 0;
+    public static HashMap<Integer, Message> messages = new HashMap<>(); 
 }

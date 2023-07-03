@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.HashMap;
 
+import Model.Message;
 import Model.TypesConverter;
 import Rules.ClientCode;
 import Rules.Constants;
@@ -93,11 +94,18 @@ public class FileProcessor {
      * 2a. Get file metadata (size, name)
      * 2. Receive file data (in chunks)
      */
-    static void download(String filepath) throws IOException {
+    static void download(Object filepath) throws IOException {
         //Initiates download
+        // the argument can also be a message ID (FileLink)
         String prefix = ClientCode.Type.FILE + D + ClientCode.Command.DOWNLOAD;
         client.send(prefix + D + filepath + D + client.requests.size());
-        client.requests.add(prefix + D + filepath);
+        if (filepath instanceof String)
+            client.requests.add(prefix + D + filepath);
+        else {
+            assert filepath instanceof Integer;
+            Message message = Data.sharedFiles.get((int) filepath);
+            client.requests.add(prefix + D + message);
+        }
     }
 
     static void downloadSetup(int requestID, long fileSize) throws IOException {

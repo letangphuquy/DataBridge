@@ -112,6 +112,7 @@ public class Client extends E2ESocket {
     }, "Server Listener");
 
     private void run() {
+        //TODO: make this to a console app to test
         try {
             boolean flag = true;
             if (flag) {

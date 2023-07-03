@@ -17,6 +17,10 @@ public class FileLink extends Message {
         this.fileID = fileID;
     }
     
+    public String getFileID() {
+        return fileID;
+    }
+    
     @Override
     public String toString() {
         return super.toString() + Constants.DELIMITER + fileID;

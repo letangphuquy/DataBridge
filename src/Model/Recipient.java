@@ -43,11 +43,6 @@ public class Recipient implements DatabaseModel {
 		return recipientID;
 	}
 	
-	public Recipient addMessage(Message message) {
-		messages.add(message);
-		return this;
-	}
-	
 	public long getPublicID() {
 		return publicID;
 	}
@@ -55,6 +50,12 @@ public class Recipient implements DatabaseModel {
 		return type;
 	}
 
+	public Recipient addMessage(Message message) {
+		messages.add(message);
+		return this;
+	}
+
+	@Override
 	public Object[] toObjectArray() {
 		return new Object[] {recipientID, publicID, type};
 	}
