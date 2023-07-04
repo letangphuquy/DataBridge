@@ -8,6 +8,7 @@ import java.util.ArrayList;
 
 import Model.DFile;
 import Model.FileLink;
+import Model.Group;
 import Model.Message;
 import Model.NormalMessage;
 import Model.Password;
@@ -71,6 +72,31 @@ public class DatabaseUpdater {
             System.out.println("Could not add user " + user.getUsername() + " to database");
             e.printStackTrace();
         }
+    }
+
+    public static void addGroup(Group group) {
+        addRecipient(group.toRecipient(), group.getGroupID());
+        try {
+            addToTable("Groups", group.toObjectArray());
+        } catch (SQLException e) {
+            System.out.println("Could not add group " + group.getName() + ") to database");
+            e.printStackTrace();
+        }
+    }
+    
+    public static void addGroupMember(long groupID, long userID) {
+        User user = (User) Data.recipients.get(userID);
+        Data.recipients.compute(groupID, (Long id, Recipient recipient) -> {
+            assert recipient instanceof Group;
+            Group group = (Group) recipient;
+            try {
+                addToTable("GroupMembership", new Object[] {groupID, userID});
+            } catch (SQLException e) {
+                System.out.println("Error adding user " + user.getUserID() + " to group " + group.getName() + " in database");
+                e.printStackTrace();
+            }
+            return group.addMember(user);
+        });
     }
 
     public static void addFile(String path, DFile file) {

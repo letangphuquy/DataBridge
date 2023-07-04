@@ -3,6 +3,7 @@ package Model;
 import java.util.ArrayList;
 
 import Rules.Constants;
+import Server.Database.Data;
 
 public class Recipient implements DatabaseModel {
     private long recipientID; 
@@ -53,6 +54,18 @@ public class Recipient implements DatabaseModel {
 	public Recipient addMessage(Message message) {
 		messages.add(message);
 		return this;
+	}
+
+	public static Recipient randomRecipient() {
+        long recipientID = Constants.DEFAULT_ID;
+        do {
+            recipientID = RandomGenerator.randomID();
+        } while (Data.recipients.containsKey(recipientID));
+        long publicID = Constants.DEFAULT_ID;
+        do {
+            publicID = RandomGenerator.randomPublicID();
+        } while (publicID == recipientID || Data.publicIDToRecipientID.containsKey(publicID));
+		return new Recipient(recipientID, publicID, 'G');
 	}
 
 	@Override

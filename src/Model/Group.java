@@ -23,9 +23,10 @@ public class Group extends Recipient {
         this.name = args[1];
     }
 
-    public void addMember(User user) {
+    public Group addMember(User user) {
         members.add(user);
         memberIDs.add(user.getUserID());
+        return this;
     }
 
     public void removeMember(User user) {
@@ -42,6 +43,10 @@ public class Group extends Recipient {
         }
     }
 
+    public String getName() {
+        return name;
+    }
+
     public List<User> getMembers() {
         return new ArrayList<User>(members);
     }
@@ -49,4 +54,15 @@ public class Group extends Recipient {
     public boolean hasMember(long userID) {
         return memberIDs.contains(userID);
     }
+
+    
+    @Override
+    public Object[] toObjectArray() {
+        return new Object[] { getGroupID(), name };
+    }
+
+    public Recipient toRecipient() {
+		//Rare BUG encounter: Internal type of the Recipient is a User, so `return this` on super method returns User's information instead of Recipient's
+		return super.getRecipient();
+	}
 }

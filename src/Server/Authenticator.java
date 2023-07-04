@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import Model.Password;
 import Model.RandomGenerator;
+import Model.Recipient;
 import Model.TypesConverter;
 import Model.User;
 import Rules.*;
@@ -49,6 +50,7 @@ public class Authenticator {
      * Register procedure: more or less the same as login
      * auto login after register
      */
+
     private static void register(ServerThread server, String username) throws IOException {
         //Read "AUTH REGISTER <username>" and triggered by ServerThread
         if (Data.usernameToID.containsKey(username)) {
@@ -62,16 +64,7 @@ public class Authenticator {
         String hashedPassword = server.read();
         Password password = new Password(username, saltString, hashedPassword);
         User user = new User(username);
-        long recipientID = Constants.DEFAULT_ID;
-        do {
-            recipientID = RandomGenerator.randomID();
-        } while (Data.recipients.containsKey(recipientID));
-        long publicID = Constants.DEFAULT_ID;
-        do {
-            publicID = RandomGenerator.randomPublicID();
-        } while (publicID == recipientID || Data.publicIDToRecipientID.containsKey(publicID));
-        System.out.println("Generated recipient ID: " + recipientID + ", public ID: " + publicID);
-        user.setIDs(recipientID, publicID);
+        user.setIDs(Recipient.randomRecipient());
         DatabaseUpdater.addUser(user, password);
 
         onLogin(server, user);

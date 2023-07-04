@@ -8,6 +8,7 @@ import Model.Group;
 import Model.Message;
 import Model.NormalMessage;
 import Model.Recipient;
+import Model.User;
 import Rules.Constants;
 import Rules.ServerCode;
 import Rules.ClientCode.Command;
@@ -23,9 +24,25 @@ public class Messenger {
             case SEND:
                 receiveChat(serverThread, params);
                 break;
+            case CREATE:
+                createGroup(serverThread, params[0]);
+                break;
             default:
                 break;
         }
+    }
+
+    //TODO: Add group member
+    private static void addGroupMember(long groupID, long userID) throws IOException {
+        userID = Data.publicIDToRecipientID.get(userID);
+        DatabaseUpdater.addGroupMember(groupID, userID);
+    }
+
+    private static void createGroup(ServerThread server, String groupName) throws IOException {
+        Group group = new Group(groupName);
+        group.setIDs(Recipient.randomRecipient());
+        DatabaseUpdater.addGroup(group);
+        DatabaseUpdater.addGroupMember(group.getGroupID(), server.user.getUserID());
     }
 
     private static void sendMessage(long userID, Message message) throws IOException {

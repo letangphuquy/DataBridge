@@ -13,6 +13,7 @@ import Rules.Constants;
 
 public class Messenger {
     private Messenger() {}
+    private final static String D = String.valueOf(Constants.DELIMITER);
 
     //send by public id
     private static void send(String message, long receiverID, boolean isFile) throws IOException {
@@ -28,6 +29,14 @@ public class Messenger {
         filePath = filePath.replace("/", "\\"); // for Windows
         send(filePath, receiverID, true);
     }
+
+    public static void createGroup(String groupName) throws IOException {
+        Client.instance.send(ClientCode.Type.CHAT + D + ClientCode.Command.CREATE + D + groupName);
+    }
+
+    // public static void addGroupMember(long groupID, long userID) throws IOException {
+    //     Client.instance.send(ClientCode.Type.CHAT + D + ClientCode.Command.ADD + D + groupID + D + userID);
+    // }
 
     public static long getDialougeID(Message message) {
         return (message.getReceiverID() == Client.instance.user.getPublicID()) ? message.getSenderID() : message.getReceiverID();
