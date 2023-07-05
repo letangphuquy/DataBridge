@@ -44,7 +44,7 @@ public class DatabaseUpdater {
     }
 
     private static void addRecipient(Recipient recipient, long recipientID) {
-        Data.recipients.put(recipient.getPublicID(), recipient);
+        Data.recipients.put(recipientID, recipient); //damn
         Data.publicIDToRecipientID.put(recipient.getPublicID(), recipientID);
         Data.recipientIDToPublicID.put(recipientID, recipient.getPublicID());
         try {
@@ -53,12 +53,13 @@ public class DatabaseUpdater {
             System.out.println("Could not add recipient " + recipient.getPublicID() + " to database");
             e.printStackTrace();
         }
+        System.out.println("Added recipient " + recipient.getPublicID() + " to database");
     }
 
     public static void addUser(User user, Password password) {
         addRecipient(user.toRecipient(), user.getUserID());
-        Data.usernameToID.put(user.getUsername(), user.getUserID());
         Data.users.put(user.getUserID(), user);
+        Data.usernameToID.put(user.getUsername(), user.getUserID());
         Data.passwordOf.put(user.getUsername(), password);
         try {
             Object[] args = user.toRecipient().toObjectArray();
@@ -76,6 +77,7 @@ public class DatabaseUpdater {
 
     public static void addGroup(Group group) {
         addRecipient(group.toRecipient(), group.getGroupID());
+        Data.groups.put(group.getGroupID(), group);
         try {
             addToTable("Groups", group.toObjectArray());
         } catch (SQLException e) {
@@ -85,17 +87,39 @@ public class DatabaseUpdater {
     }
     
     public static void addGroupMember(long groupID, long userID) {
-        User user = (User) Data.recipients.get(userID);
+        User user = Data.users.get(userID);
+        if (Data.recipients.get(groupID) == null) {
+            System.out.println("WTF?? Group " + groupID + " does not exist in database");
+        }
         Data.recipients.compute(groupID, (Long id, Recipient recipient) -> {
             assert recipient instanceof Group;
-            Group group = (Group) recipient;
+            Group group = Data.groups.get(groupID);
             try {
                 addToTable("GroupMembership", new Object[] {groupID, userID});
             } catch (SQLException e) {
                 System.out.println("Error adding user " + user.getUserID() + " to group " + group.getName() + " in database");
                 e.printStackTrace();
             }
-            return group.addMember(user);
+            group = group.addMember(user);
+            Data.groups.put(groupID, group);
+            return group;
+        });
+    }
+
+    public static void addGroupAdmin(long groupID, long userID) {
+        User user = Data.users.get(userID);
+        Data.recipients.compute(groupID, (Long id, Recipient recipient) -> {
+            assert recipient instanceof Group;
+            Group group = Data.groups.get(groupID);
+            try {
+                addToTable("GroupOwnership", new Object[] {groupID, userID});
+            } catch (SQLException e) {
+                System.out.println("Error adding user " + user.getUserID() + " as ADMIN of group " + group.getName() + " in database");
+                e.printStackTrace();
+            }
+            group = group.addAdmin(user);
+            Data.groups.put(groupID, group);
+            return group;
         });
     }
 

@@ -56,6 +56,12 @@ CREATE TABLE GroupMembership
 	PRIMARY KEY(group_id, user_id)
 )
 
+CREATE TABLE GroupOwnership
+(
+	group_id BIGINT REFERENCES Groups(group_id) NOT NULL,
+	user_id BIGINT REFERENCES Users(user_id) NOT NULL,
+	PRIMARY KEY(group_id, user_id)
+)
 
 -- "File-related" part
 CREATE TABLE Files

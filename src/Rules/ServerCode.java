@@ -3,6 +3,7 @@ package Rules;
 /**
  * ServerCode
  * Rules for communication from server to client (via sockets) (aka. responses)
+ * Note: This list is not exhaustive
  * 
  * Let D be the delimiter
 //  * Code <_> Requester_User_ID <_> Details
@@ -15,7 +16,7 @@ package Rules;
  * 
  * Group 2: General / Specific
  * - ACCEPT <_> [Request_ID] (on request success: file upload, ...)
- * - ACCEPT <_> [Request_ID] <_> [Additional details] (on request success: file download, ...)
+ * - ACCEPT <_> [Request_ID] <_> [Additional details] (on request success: file download, group creation, ...) 
  * - REJECT <_> [Request_ID] <_> [Details] (on request failure: file upload, ...)
  * - DATA <_> [Request_ID] <_> [Details] (for a specific request: file download, ...)
  * - CHAT <_> [Message object]

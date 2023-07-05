@@ -2,23 +2,25 @@ package Client;
 
 import java.io.IOException;
 import java.sql.Timestamp;
-import java.util.ArrayList;
 import java.util.Date;
 
 import Model.FileLink;
+import Model.Group;
 import Model.Message;
 import Model.NormalMessage;
 import Rules.ClientCode;
 import Rules.Constants;
+import Rules.ClientCode.Command;
 
 public class Messenger {
     private Messenger() {}
     private final static String D = String.valueOf(Constants.DELIMITER);
+    private static Client client = Client.instance;
 
     //send by public id
     private static void send(String message, long receiverID, boolean isFile) throws IOException {
         message = String.join(Constants.DELIMITER, new String[] {ClientCode.Type.CHAT.toString(), ClientCode.Command.SEND.toString(), String.valueOf(receiverID), String.valueOf(isFile), message, new Timestamp(new Date().getTime()).toString()});
-        Client.instance.send(message);
+        client.send(message);
     }
 
     public static void sendNormalChat(String message, long receiverID) throws IOException {
@@ -31,26 +33,51 @@ public class Messenger {
     }
 
     public static void createGroup(String groupName) throws IOException {
-        Client.instance.send(ClientCode.Type.CHAT + D + ClientCode.Command.CREATE + D + groupName);
+        String request = ClientCode.Type.CHAT + D + ClientCode.Command.CREATE + D + groupName;
+        client.send(request + D + String.valueOf(client.requests.size()));
+        client.requests.add(request);
     }
 
-    // public static void addGroupMember(long groupID, long userID) throws IOException {
-    //     Client.instance.send(ClientCode.Type.CHAT + D + ClientCode.Command.ADD + D + groupID + D + userID);
-    // }
+    private static void createGroupFrom(long groupID, String name) {
+        Data.conversations.put(groupID, (new Group(name)));
+    }
+
+    public static void addMember(long groupID, long userID) throws IOException {
+        String request = ClientCode.Type.CHAT + D + ClientCode.Command.ADD + D + groupID + D + userID;
+        client.send(request + D + String.valueOf(client.requests.size()));
+        client.requests.add(request);
+    }
+
+    //TODO: Consider completing this after implementing "Social" section (Friends, etc)
+    private static void addMemberFrom(long groupID, long userID) {
+    }
+
+    public static void removeGroupMember(long groupID, long userID) throws IOException {
+        // client.send(ClientCode.Type.CHAT + D + ClientCode.Command.REMOVE + D + groupID + D + userID);
+    }
+
+    public static void addAdmin(long groupID, long userID) throws IOException {
+        client.send(ClientCode.Type.CHAT + D + ClientCode.Command.PROMOTE + D + groupID + D + userID);
+    }
+
+    public static void removeAdmin(long groupID, long userID) throws IOException {
+        client.send(ClientCode.Type.CHAT + D + ClientCode.Command.DEMOTE + D + groupID + D + userID);
+    }
 
     public static long getDialougeID(Message message) {
-        return (message.getReceiverID() == Client.instance.user.getPublicID()) ? message.getSenderID() : message.getReceiverID();
+        return (message.getReceiverID() == client.user.getPublicID()) ? message.getSenderID() : message.getReceiverID();
     }
 
-    public static void process(String[] messageParts) {
+    public static void receiveChat(String[] messageParts) {
         boolean isFile = Boolean.parseBoolean(messageParts[3]);
         String content = messageParts[5]; // file ID or message content
-        Message message = new Message(messageParts); // still using the constructor with messageID
-        message = isFile ? new FileLink(message, content) : new NormalMessage(message, content);
+        Message parentMessage = new Message(messageParts); // still using the constructor with messageID
+        final Message message = isFile ? new FileLink(parentMessage, content) : new NormalMessage(parentMessage, content);
         long dialougeID = getDialougeID(message); // direct message or group message
-        if (!Data.conversations.containsKey(dialougeID)) 
-            Data.conversations.put(dialougeID, new ArrayList<>());
-        Data.conversations.get(dialougeID).add(message);
+        assert Data.conversations.containsKey(dialougeID); 
+        Data.conversations.compute(dialougeID, (id, conversation) -> {
+            return conversation.addMessage(message);
+        });
         // System.out.println("Received message in " + dialougeID + ": " + content + " from " + senderID + " at " + sendTime);
         //TODO: TEST file sharing
         if (isFile) {
@@ -59,4 +86,15 @@ public class Messenger {
         }
     }
 
+    public static void process(Command reqCommand, String[] requestParts, String[] responseParts) {
+        switch (reqCommand) {
+            case CREATE:
+                createGroupFrom(Long.parseLong(responseParts[0]), requestParts[0]);
+                break;
+            case ADD:
+                addMemberFrom(Long.parseLong(requestParts[0]), Long.parseLong(requestParts[1]));
+                break;
+            default:
+        }
+    }
 }

@@ -11,7 +11,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.Scanner;
+import java.util.Arrays;
 import java.util.stream.Stream;
 
 import Model.E2ESocket;
@@ -80,6 +80,9 @@ public class Client extends E2ESocket {
                                 case FILE:
                                     FileProcessor.process(reqCommand, requestID, responseParts);
                                     break;
+                                case CHAT:
+                                    Messenger.process(reqCommand, requestParts, responseParts);
+                                    break;
                                 default:
                                     System.out.println("Message type not recognized " + reqType);
                             }
@@ -87,7 +90,7 @@ public class Client extends E2ESocket {
                             // requests.remove(requestID);
                             break;
                         case REJECT:
-                            System.out.println("Request rejected");
+                            System.out.println("Request rejected " + Arrays.toString(responseParts));
                             break;
                         case DATA:
                             switch (reqType) {
@@ -99,7 +102,7 @@ public class Client extends E2ESocket {
                             break;
                         case CHAT:
                             responseParts = Stream.of(responseParts).skip(1).toArray(String[]::new);
-                            Messenger.process(responseParts);
+                            Messenger.receiveChat(responseParts);
                             break;
                         default:
                             System.out.println("Message type not recognized " + msg);
@@ -122,7 +125,7 @@ public class Client extends E2ESocket {
         System.out.println("4. Upload file");
         System.out.println("5. Download file");
         System.out.println("6. Chat");
-        System.out.println("7. (or 'end') Exit");
+        System.out.println("7. Group");
         System.out.print("Enter your choice: ");
     }
 
@@ -141,7 +144,6 @@ public class Client extends E2ESocket {
         String line, temp[] = new String[2];
         while ((line = console.readLine()) != null) {
             if ("exit".equals(line)) break;
-            boolean flag = false;
             switch (line) {
                 case "0":
                     promptUsernamePassword(console, temp);
@@ -198,46 +200,31 @@ public class Client extends E2ESocket {
                         Messenger.sendNormalChat(msg, userID);
                     }
                     break;
+                case "7":
+                    System.out.println("Enter (C) to create group, (A) to add member, (R) to remove member, (P) to assign new admin, (D) to remove admin, and (E) to edit group info");
+                    choice = console.readLine();
+                    if ("C".equals(choice)) {
+                        System.out.println("Enter group's name:");
+                        name = console.readLine();
+                        Messenger.createGroup(name);
+                    }
+                    else if ("A".equals(choice)) {
+                        System.out.println("Enter group's ID:");
+                        long groupID = Long.parseLong(console.readLine());
+                        System.out.println("Enter member's ID:");
+                        userID = Long.parseLong(console.readLine());
+                        Messenger.addMember(groupID, userID);
+                    }
+                    else {
+                        System.out.println("Unsupported yet. Try again later");
+                    }  
                 default: return;
             }
         }
     }
-    /*
-     * Test data for console application:
-1
-test2
-1
-3
-lqdoj
-work
-4
-E:/LQDOJ/translate-cp-handbook/book.pdf
-work/lqdoj/
-6
-4530281956215267098
-Y
-work/lqdoj/book.pdf
-2
-
-1
-test2
-1
-6
-4530281956215267098
-Y
-work/lqdoj/book.pdf
-2
-
-1
-dsk
-vinataba
-5
-S
-14
-     */
 
     private void run() {
-        //TODO: make this to a console app to test
+        //TODO: finish functions and test with the console app
         showMenu();
         try {
             try {

@@ -10,6 +10,7 @@ public class Group extends Recipient {
     String name;
     ArrayList<User> members = new ArrayList<>();
     HashSet<Long> memberIDs = new HashSet<>();
+    HashSet<Long> adminIDs = new HashSet<>();
 
     //Same note as User: recipientID / groupID is private, and is set automatically by the database during loading process or when creating new group
     public Group(String name) {
@@ -34,6 +35,15 @@ public class Group extends Recipient {
         memberIDs.remove(user.getUserID());
     }
 
+    public Group addAdmin(User user) {
+        adminIDs.add(user.getUserID());
+        return this;
+    }
+
+    public void removeAdmin(User user) {
+        adminIDs.remove(user.getUserID());
+    }
+
     public long getGroupID() {
         try {
             return super.getRecipientID();
@@ -55,6 +65,9 @@ public class Group extends Recipient {
         return memberIDs.contains(userID);
     }
 
+    public boolean hasAdmin(long userID) {
+        return adminIDs.contains(userID);
+    }
     
     @Override
     public Object[] toObjectArray() {

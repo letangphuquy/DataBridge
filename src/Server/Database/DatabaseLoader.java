@@ -103,6 +103,13 @@ public class DatabaseLoader {
             Data.groups.get(groupID).addMember(Data.users.get(userID));
         }
 
+        result = loadDatabase("GroupOwnership");
+        for (var args : result) {
+            long groupID = Long.parseLong(args[0]);
+            long userID = Long.parseLong(args[1]);
+            Data.groups.get(groupID).addAdmin(Data.users.get(userID));
+        }
+
         System.out.println("LOAD database:\nUsers: " + Data.users.size() + " users");
         System.out.println("Passwords: " + Data.passwordOf.size() + " passwords");
         for (var entry : Data.passwordOf.entrySet()) {

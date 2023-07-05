@@ -20,7 +20,7 @@ public final class ClientCode {
         REGISTER, LOGIN, LOGOUT, //AUTH
         FRIEND, //USER
         UPLOAD, DOWNLOAD, VIEW, //FILE
-        ADD, REMOVE, SEND, //CHAT
+        ADD, REMOVE, PROMOTE, DEMOTE, SEND, //CHAT
         CREATE, EDIT, SEARCH // GENERAL
     }
 
@@ -34,6 +34,7 @@ public final class ClientCode {
      * FILE <_> DOWNLOAD, VIEW <_> FILENAME
      * FILE <_> CREATE <_> FILENAME <_> METADATA (such as path, size, ...)
      * CHAT <_> ADD, REMOVE <_> USERNAME
+     * CHAT <_> PROMOTE, DEMOTE <_> USERNAME
      * CHAT <_> SEND <_> RECIPIENT <_> MESSAGE / FILE_LINK
      * CHAT <_> CREATE <_> GROUP_NAME <_> USERNAME1, USERNAME2, USERNAME3, ...
      * CHAT <_> EDIT <_> GROUP_NAME 

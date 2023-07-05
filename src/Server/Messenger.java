@@ -8,7 +8,6 @@ import Model.Group;
 import Model.Message;
 import Model.NormalMessage;
 import Model.Recipient;
-import Model.User;
 import Rules.Constants;
 import Rules.ServerCode;
 import Rules.ClientCode.Command;
@@ -25,24 +24,42 @@ public class Messenger {
                 receiveChat(serverThread, params);
                 break;
             case CREATE:
-                createGroup(serverThread, params[0]);
+                createGroup(serverThread, params[0], Integer.parseInt(params[1]));
+                break;
+            case ADD:
+                addGroupMember(serverThread, Long.parseLong(params[0]), Long.parseLong(params[1]), Integer.parseInt(params[2]));
                 break;
             default:
                 break;
         }
     }
 
-    //TODO: Add group member
-    private static void addGroupMember(long groupID, long userID) throws IOException {
-        userID = Data.publicIDToRecipientID.get(userID);
-        DatabaseUpdater.addGroupMember(groupID, userID);
-    }
-
-    private static void createGroup(ServerThread server, String groupName) throws IOException {
+    private static void createGroup(ServerThread server, String groupName, int requestID) throws IOException {
         Group group = new Group(groupName);
         group.setIDs(Recipient.randomRecipient());
         DatabaseUpdater.addGroup(group);
         DatabaseUpdater.addGroupMember(group.getGroupID(), server.user.getUserID());
+        DatabaseUpdater.addGroupAdmin(group.getGroupID(), server.user.getUserID());
+        server.send(ServerCode.ACCEPT + D + requestID + D + group.getPublicID());
+    }
+
+    private static void addGroupMember(ServerThread server, long groupID, long userID, int requestID) throws IOException {
+        Group group = (Group) Data.recipients.get(groupID);
+        if (group == null) {
+            server.send(ServerCode.REJECT + D + requestID + D + "Group does not exist");
+            return;
+        }
+        userID = Data.publicIDToRecipientID.get(userID);
+        if (!group.hasAdmin(userID)) {
+            server.send(ServerCode.REJECT + D + requestID + D + "User is not allowed to add");
+            return;
+        }
+        if (group.hasMember(userID)) {
+            server.send(ServerCode.REJECT + D + requestID + D + "User is already in group");
+            return;
+        }
+        server.send(ServerCode.ACCEPT + D + requestID);
+        DatabaseUpdater.addGroupMember(groupID, userID);
     }
 
     private static void sendMessage(long userID, Message message) throws IOException {
@@ -78,8 +95,7 @@ public class Messenger {
         if (receiver.getType() == 'U') {
             sendMessage(receiverID, message);
         } else {
-            assert (receiver instanceof Group);
-            Group group = (Group) receiver;
+            Group group = Data.groups.get(receiverID);
             var members = group.getMembers();
             for (var user : members) sendMessage(user.getUserID(), message);
         }
@@ -99,9 +115,10 @@ public class Messenger {
     }
 
     public static boolean checkUserReceivedMessage(long userID, Message message) {
-        Recipient receiver = Data.recipients.get(message.getReceiverID());
+        long recipientID = message.getReceiverID();
+        Recipient receiver = Data.recipients.get(recipientID);
         if (receiver.getType() == 'U')
-            return (message.getReceiverID() == userID);
-        return ((Group) receiver).hasMember(userID);
+            return (recipientID == userID);
+        return Data.groups.get(recipientID) .hasMember(userID);
     }
 }
