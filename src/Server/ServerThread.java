@@ -35,6 +35,7 @@ public class ServerThread extends E2ESocket implements Runnable {
                         System.out.println("Query result: " + user);
                         break;
                     case USER:
+                        Socializer.process(this, command, parts);
                         break;
                     case FILE:
                         FileProcessor.process(this, command, parts);

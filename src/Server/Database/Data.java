@@ -1,8 +1,10 @@
 package Server.Database;
 
 import java.sql.ResultSetMetaData;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 
 import Model.DFile;
 import Model.Group;
@@ -10,6 +12,7 @@ import Model.Message;
 import Model.Password;
 import Model.Recipient;
 import Model.User;
+import Model.UserPair;
 
 /*
  * Contains data loaded from the database
@@ -17,16 +20,25 @@ import Model.User;
  */
 
 public class Data {
+    private Data() {}
     static HashMap<String, ResultSetMetaData> metadataOf = new HashMap<>();
+    static HashMap<String, String[]> columnsOf = new HashMap<>();
 
     // Users
-    public static HashMap<Long, Recipient> recipients = new HashMap<>();
+    // Messages are also stored directly in Recipient objects
+    public static HashMap<Long, Recipient> recipients = new HashMap<>(); // NOTE: ONLY purpose is to store IDs
     public static HashMap<Long, Long> publicIDToRecipientID = new HashMap<>();
     public static HashMap<Long, Long> recipientIDToPublicID = new HashMap<>();
+
     public static HashMap<String, Long> usernameToID = new HashMap<>();
-    public static HashMap<Long, User> users = new HashMap<>();
-    public static HashMap<Long, Group> groups = new HashMap<>();
     public static HashMap<String, Password> passwordOf = new HashMap<>();
+
+    // Member and Admin are stored directly in Group objects
+    public static HashMap<Long, Group> groups = new HashMap<>();
+
+    public static HashMap<Long, User> users = new HashMap<>();
+    public static HashSet<Long> publicUsers = new HashSet<>();
+    public static HashMap<UserPair, UserPair> relationships = new HashMap<>();
 
     // Files
     public static HashMap<String, DFile> files = new HashMap<>();
@@ -34,7 +46,22 @@ public class Data {
     public static HashMap<String, String> pathToID = new HashMap<>();
     public static HashMap<String, ArrayList<String>> fileTree = new HashMap<>();
 
-    // Messages are also stored directly in object (Recipient)
     public static int messageID = 0;
     public static HashMap<Integer, Message> messages = new HashMap<>(); 
+
+    public static String[] getColumnsOf(String tableName) {
+        if (!columnsOf.containsKey(tableName)) {
+            var metadata = metadataOf.get(tableName);
+            try {
+                String[] columns = new String[metadata.getColumnCount()];
+                for (int i = 0; i < columns.length; i++)
+                    columns[i] = metadata.getColumnName(i+1);
+                columnsOf.put(tableName, columns);
+            } catch (SQLException e) {
+                System.out.println("Error getting columns of table " + tableName);
+                e.printStackTrace();
+            }
+        }
+        return columnsOf.get(tableName);
+    }
 }

@@ -19,7 +19,7 @@ import Rules.ClientCode;
 import Rules.Constants;
 import Rules.ServerCode;
 import Server.Database.Data;
-import Server.Database.DatabaseUpdater;
+import Server.Database.DatabaseInserter;
 
 public class FileProcessor {
     private FileProcessor() {}
@@ -49,7 +49,7 @@ public class FileProcessor {
             dirID = RandomGenerator.randomString(Constants.ID_LENGTH);
         } while (Data.files.containsKey(dirID));
         DFile dFile = new DFile(dirID, server.user.getUserID(), Data.pathToID.get(file.getParent()), name, "Directory", true, true, new Timestamp(new Date().getTime()));
-        DatabaseUpdater.addFile(path, dFile);
+        DatabaseInserter.addFile(path, dFile);
     }
     /*
      * Note: Files uploaded by users are stored in a remote file system
@@ -84,7 +84,7 @@ public class FileProcessor {
             } while (Data.files.containsKey(fileID));
     
             DFile dFile = new DFile(fileID, server.user.getUserID(), Data.pathToID.get(file.getParent()), filename, "Some notes about the file content", file.isDirectory(), true, new Timestamp(new Date().getTime()));
-            DatabaseUpdater.addFile(file.getPath(), dFile);
+            DatabaseInserter.addFile(file.getPath(), dFile);
         }
         filesOnReceiving.put(requestID, new FileOutputStream(file));
         bytesRemaining.put(requestID, fileSize);

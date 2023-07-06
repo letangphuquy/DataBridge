@@ -2,180 +2,103 @@ package Server.Database;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-// import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
-import Model.DFile;
-import Model.FileLink;
-import Model.Group;
-import Model.Message;
-import Model.NormalMessage;
-import Model.Password;
-import Model.Recipient;
 import Model.User;
+import Model.UserPair;
+import Rules.Relationship;
 
 public class DatabaseUpdater {
     private DatabaseUpdater() {}
 
-    private static void addToTableWithColumns(String tableName, Object[] args, String[] columns) throws SQLException {
+    private static void updateTable(String tableName, String[] columns, Object[] values, String[] idColumns, Object[] idValues) throws SQLException {
         Connection connection = DatabaseConnector.getConnection();
         synchronized (connection) {
-            int numArgs = args.length;
-            String command = "INSERT INTO " + tableName;
-            if (columns != null)
-                command += " (" + String.join(",", columns) + ") ";
-            command += " VALUES (" + String.join(",", "?".repeat(numArgs).split("")) + ")";
+            String command = "UPDATE " + tableName;
+            if (columns == null) return ;
+            assert columns.length == values.length;
+            command += " SET ";
+            String[] setCommands = new String[columns.length];
+            for (int i = 0; i < columns.length; i++)
+                setCommands[i] = columns[i] + " = ?";
+            command += String.join(",", setCommands);
+            assert idColumns != null;
+            assert idColumns.length == idValues.length;
+            command += " WHERE ";
+            String[] whereCommands = new String[idColumns.length];
+            for (int i = 0; i < idColumns.length; i++)
+                whereCommands[i] = idColumns[i] + " = ?";
+            command += String.join(" AND ", whereCommands);
+
             PreparedStatement statement = connection.prepareStatement(command);
-            // ResultSetMetaData metadata = Data.metadataOf.get(tableName);
-            for (int i = 0; i < numArgs; i++) {
-                if (args[i] instanceof Character)
-                    args[i] += "";
-                statement.setObject(i+1, args[i]);
+            for (int i = 0; i < values.length; i++) {
+                if (values[i] instanceof Character)
+                    values[i] += "";
+                statement.setObject(i+1, values[i]);
                 // System.out.println("Set type " + metadata.getColumnType(i+1) + " for column " + metadata.getColumnName(i+1) + " in table " + tableName);
             }
+            for (int i = 0; i < idValues.length; i++) {
+                if (idValues[i] instanceof Character)
+                    idValues[i] += "";
+                statement.setObject(values.length + 1 + i, idValues[i]);
+            }
+
             System.out.println("Executing command: " + command);
             statement.executeUpdate();
         }
     }
 
-    private static void addToTable(String tableName, Object[] args) throws SQLException {
-        addToTableWithColumns(tableName, args, null);
-    }
-
-    private static void addRecipient(Recipient recipient, long recipientID) {
-        Data.recipients.put(recipientID, recipient); //damn
-        Data.publicIDToRecipientID.put(recipient.getPublicID(), recipientID);
-        Data.recipientIDToPublicID.put(recipientID, recipient.getPublicID());
+	public static void updateUser(long userID, User user) {
         try {
-            addToTable("Recipients", recipient.toObjectArray());
+            updateTable("Users", Data.getColumnsOf("Users"), user.toObjectArray(), new String[] {"user_id"}, new Object[] {userID});
         } catch (SQLException e) {
-            System.out.println("Could not add recipient " + recipient.getPublicID() + " to database");
+            System.out.println("Could not update user " + user.getUserID() + " in database");
             e.printStackTrace();
         }
-        System.out.println("Added recipient " + recipient.getPublicID() + " to database");
-    }
-
-    public static void addUser(User user, Password password) {
-        addRecipient(user.toRecipient(), user.getUserID());
-        Data.users.put(user.getUserID(), user);
-        Data.usernameToID.put(user.getUsername(), user.getUserID());
-        Data.passwordOf.put(user.getUsername(), password);
-        try {
-            Object[] args = user.toRecipient().toObjectArray();
-            System.out.println("Adding recipient: ");
-            for (Object arg : args)
-                System.out.print(arg + " ");
-            System.out.println();
-            addToTable("Users", user.toObjectArray());
-            addToTable("Passwords", password.toObjectArray());
-        } catch (SQLException e) {
-            System.out.println("Could not add user " + user.getUsername() + " to database");
-            e.printStackTrace();
-        }
-    }
-
-    public static void addGroup(Group group) {
-        addRecipient(group.toRecipient(), group.getGroupID());
-        Data.groups.put(group.getGroupID(), group);
-        try {
-            addToTable("Groups", group.toObjectArray());
-        } catch (SQLException e) {
-            System.out.println("Could not add group " + group.getName() + ") to database");
-            e.printStackTrace();
-        }
-    }
-    
-    public static void addGroupMember(long groupID, long userID) {
-        User user = Data.users.get(userID);
-        if (Data.recipients.get(groupID) == null) {
-            System.out.println("WTF?? Group " + groupID + " does not exist in database");
-        }
-        Data.recipients.compute(groupID, (Long id, Recipient recipient) -> {
-            assert recipient instanceof Group;
-            Group group = Data.groups.get(groupID);
-            try {
-                addToTable("GroupMembership", new Object[] {groupID, userID});
-            } catch (SQLException e) {
-                System.out.println("Error adding user " + user.getUserID() + " to group " + group.getName() + " in database");
-                e.printStackTrace();
-            }
-            group = group.addMember(user);
-            Data.groups.put(groupID, group);
-            return group;
-        });
-    }
-
-    public static void addGroupAdmin(long groupID, long userID) {
-        User user = Data.users.get(userID);
-        Data.recipients.compute(groupID, (Long id, Recipient recipient) -> {
-            assert recipient instanceof Group;
-            Group group = Data.groups.get(groupID);
-            try {
-                addToTable("GroupOwnership", new Object[] {groupID, userID});
-            } catch (SQLException e) {
-                System.out.println("Error adding user " + user.getUserID() + " as ADMIN of group " + group.getName() + " in database");
-                e.printStackTrace();
-            }
-            group = group.addAdmin(user);
-            Data.groups.put(groupID, group);
-            return group;
-        });
-    }
-
-    public static void addFile(String path, DFile file) {
-        Data.files.put(file.getFileID(), file);
-        Data.idToPath.put(file.getFileID(), path);
-        Data.pathToID.put(path, file.getFileID());
-        if (!Data.fileTree.containsKey(path))
-            Data.fileTree.put(path, new ArrayList<String>());
+        Data.users.put(userID, user);
+        if (user.isPrivate()) 
+            Data.publicUsers.remove(userID);
         else
-            Data.fileTree.get(path).add(file.getFileID());
+            Data.publicUsers.add(userID);
+	}
 
-        try {
-            addToTable("Files", file.toObjectArray());
-        } catch (SQLException e) {
-            System.out.println("Could not add file " + file.getFileName() + "(" + file.getFileID() + ") to database");
-            e.printStackTrace();
+    public static UserPair updateRelationship(long userAID, long userBID, Relationship attitude) {
+        boolean isSwapped = false;
+        if (userAID > userBID) {
+            userAID ^= userBID;
+            userBID ^= userAID;
+            userAID ^= userBID;
+            isSwapped = true;
         }
-    }
-
-    private static String[] messageColumns;
-    private static void getMessageColumns() {
-        if (messageColumns != null) return;
-        var metadata = Data.metadataOf.get("Messages");
-        try {
-            messageColumns = new String[metadata.getColumnCount() - 1];
-            for (int i = 0; i < messageColumns.length; i++)
-                messageColumns[i] = metadata.getColumnName(i+2); // skips messageID column
-        } catch (SQLException e) {
-            System.out.println("Error saving message to DB: could not get metadata");
-            e.printStackTrace();
-        }
-    }
-
-    public static void addMessage(Message message) {
-        getMessageColumns();
-        try {
-            // or else it would be interpreted as a subclass of Message
-            addToTableWithColumns("Messages", message.getMessage().toObjectArray(), messageColumns);
-            message.setID(++Data.messageID); // only set ID after adding to DB
-            if (message instanceof FileLink) {
-                System.out.println("It was " + ((FileLink) message).getFileID());
-                addToTable("FileLinks", ((FileLink) message).toObjectArray());
-            } else {
-                assert(message instanceof NormalMessage);
-                addToTable("NormalMessages", ((NormalMessage) message).toObjectArray());
-            }
-        } catch (SQLException e) {
-            System.out.println("Could not add message " + message + " to database");
-            e.printStackTrace();
+        Relationship newAttitudeA = attitude;
+        Relationship newAttitudeB = Relationship.NONE;
+        if (isSwapped) {
+            newAttitudeA = Relationship.NONE;
+            newAttitudeB = attitude;
         }
 
-        Data.messages.put(message.getMessageID(), message);
-        long receiverID = message.getReceiverID();
-        Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {
-            return recipient.addMessage(message);
-        });
+        User userA = Data.users.get(userAID);
+        User userB = Data.users.get(userBID);
+        UserPair pair = new UserPair(userA, userB);
+        pair.setAttitudes(newAttitudeA, newAttitudeB);
+
+        if (!Data.relationships.containsKey(pair)) {
+            DatabaseInserter.addRelationship(pair);
+        } else {
+            UserPair oldPair = Data.relationships.get(pair);
+            if (!isSwapped)
+                pair.setAttitudeB(oldPair.getAttitudeB());
+            else
+                pair.setAttitudeA(oldPair.getAttitudeA());
+            Data.relationships.put(pair, pair);
+        }
+
+        try {
+            updateTable("Friendship", Data.getColumnsOf("Friendship"), pair.toObjectArray(), new String[] {"user_A", "user_B"}, new Object[] {userAID, userBID});
+        } catch (SQLException e) {
+            System.out.println("Could not update relationship between " + userAID + " and " + userBID + " in database");
+            e.printStackTrace();
+        }
+        return pair;
     }
 }

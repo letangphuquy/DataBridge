@@ -12,6 +12,7 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.stream.Stream;
 
 import Model.E2ESocket;
@@ -38,6 +39,11 @@ public class Client extends E2ESocket {
         // System.out.println("Hi, I'm going to send: " + msg);
         super.send(msg);
     }
+
+    public void sendRequest(String msg) throws IOException {
+        send(msg + Constants.DELIMITER + String.valueOf(requests.size()));
+        requests.add(msg);
+    }
     
     Thread serverListener = new Thread(new Runnable() {
         //How to stop listening when logout?
@@ -59,21 +65,29 @@ public class Client extends E2ESocket {
                     String response = responseParts[0];
 
                     int requestID = -1;
-                    String request, requestParts[] = null, type, command;
+                    String request, requestParts[] = null;// type, command;
                     ClientCode.Type reqType = ClientCode.Type.AUTH;
                     ClientCode.Command reqCommand = ClientCode.Command.LOGOUT;
                     
-                    if (!ServerCode.CHAT.toString().equals(responseParts[0])) {
+                    HashSet<ServerCode> specialResponses = new HashSet<>(Arrays.asList(
+                        ServerCode.CHAT,
+                        ServerCode.USER
+                    ));
+
+                    if (!specialResponses.contains(ServerCode.valueOf(response))) {
                         requestID = Integer.parseInt(responseParts[1]);
                         request = requests.get(requestID);
                         requestParts = request.split((String) Constants.DELIMITER);
-                        type = requestParts[0];
-                        command = requestParts[1];
+                        String type = requestParts[0];
+                        String command = requestParts[1];
                         reqType = ClientCode.Type.valueOf(type);
                         reqCommand = ClientCode.Command.valueOf(command);
                         requestParts = Stream.of(requestParts).skip(2).toArray(String[]::new);
                         responseParts = Stream.of(responseParts).skip(2).toArray(String[]::new);
+                    } else {
+                        responseParts = Stream.of(responseParts).skip(1).toArray(String[]::new);
                     }
+
                     switch (ServerCode.valueOf(response)) {
                         case ACCEPT:
                             switch (reqType) {
@@ -82,6 +96,9 @@ public class Client extends E2ESocket {
                                     break;
                                 case CHAT:
                                     Messenger.process(reqCommand, requestParts, responseParts);
+                                    break;
+                                case USER:
+                                    Socializer.process(reqCommand, requestParts, responseParts);
                                     break;
                                 default:
                                     System.out.println("Message type not recognized " + reqType);
@@ -97,12 +114,17 @@ public class Client extends E2ESocket {
                                 case FILE:
                                     FileProcessor.process(reqCommand, requestID, responseParts);
                                     break;
+                                case USER:
+                                    Socializer.process(reqCommand, requestParts, responseParts);
+                                    break;
                                 default: ;
                             }
                             break;
                         case CHAT:
-                            responseParts = Stream.of(responseParts).skip(1).toArray(String[]::new);
                             Messenger.receiveChat(responseParts);
+                            break;
+                        case USER:
+                            Socializer.relationshipChanged(responseParts);
                             break;
                         default:
                             System.out.println("Message type not recognized " + msg);

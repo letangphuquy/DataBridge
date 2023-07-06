@@ -1,0 +1,74 @@
+/*
+ * Test data for consoleApplication:
+ * Users:
+ * [test2, 1] [dsk, vinataba] ![mind, courage]
+ * Messages
+ * [14, book.pdf]
+ * [7, eyyo sing it bro]
+ * Groups
+ */
+
+Testcase 1:
+login as test2, upload the book to server, then DM it to dsk
+dks then logins, receive his FileLink message
+
+1
+test2
+1
+3
+lqdoj
+work
+4
+E:/LQDOJ/translate-cp-handbook/book.pdf
+work/lqdoj/
+6
+4530281956215267098
+Y
+work/lqdoj/book.pdf
+2
+
+1
+test2
+1
+6
+4530281956215267098
+Y
+work/lqdoj/book.pdf
+2
+
+1
+dsk
+vinataba
+5
+S
+14
+
+Testcase 2:
+Register [mind, courage], create group, invite dsk and test2 then send a message
+0
+mind
+courage
+7
+C
+hiphop brothers
+
+1
+mind
+courage
+7
+A
+4237167234928205659
+4530281956215267098
+7
+A
+4237167234928205659
+4632306947677770276
+
+
+1
+mind
+courage
+6
+4237167234928205659
+N
+wassup fellows, showtime is comin' soon so get prepared!

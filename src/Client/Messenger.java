@@ -8,9 +8,8 @@ import Model.FileLink;
 import Model.Group;
 import Model.Message;
 import Model.NormalMessage;
-import Rules.ClientCode;
+import Rules.ClientCode.*;
 import Rules.Constants;
-import Rules.ClientCode.Command;
 
 public class Messenger {
     private Messenger() {}
@@ -19,7 +18,7 @@ public class Messenger {
 
     //send by public id
     private static void send(String message, long receiverID, boolean isFile) throws IOException {
-        message = String.join(Constants.DELIMITER, new String[] {ClientCode.Type.CHAT.toString(), ClientCode.Command.SEND.toString(), String.valueOf(receiverID), String.valueOf(isFile), message, new Timestamp(new Date().getTime()).toString()});
+        message = Type.CHAT + D + Command.SEND + D + receiverID + D + isFile + D + message + D + new Timestamp(new Date().getTime());
         client.send(message);
     }
 
@@ -33,35 +32,31 @@ public class Messenger {
     }
 
     public static void createGroup(String groupName) throws IOException {
-        String request = ClientCode.Type.CHAT + D + ClientCode.Command.CREATE + D + groupName;
-        client.send(request + D + String.valueOf(client.requests.size()));
-        client.requests.add(request);
+        client.sendRequest(Type.CHAT + D + Command.CREATE + D + groupName);
     }
 
-    private static void createGroupFrom(long groupID, String name) {
+    private static void createGroupAccepted(long groupID, String name) {
         Data.conversations.put(groupID, (new Group(name)));
     }
 
     public static void addMember(long groupID, long userID) throws IOException {
-        String request = ClientCode.Type.CHAT + D + ClientCode.Command.ADD + D + groupID + D + userID;
-        client.send(request + D + String.valueOf(client.requests.size()));
-        client.requests.add(request);
+        client.sendRequest(Type.CHAT + D + Command.ADD + D + groupID + D + userID);
     }
 
     //TODO: Consider completing this after implementing "Social" section (Friends, etc)
-    private static void addMemberFrom(long groupID, long userID) {
+    private static void addMemberAccepted(long groupID, long userID) {
     }
 
-    public static void removeGroupMember(long groupID, long userID) throws IOException {
-        // client.send(ClientCode.Type.CHAT + D + ClientCode.Command.REMOVE + D + groupID + D + userID);
+    public static void removeMember(long groupID, long userID) throws IOException {
+        // client.send(Type.CHAT + D + Command.REMOVE + D + groupID + D + userID);
     }
 
     public static void addAdmin(long groupID, long userID) throws IOException {
-        client.send(ClientCode.Type.CHAT + D + ClientCode.Command.PROMOTE + D + groupID + D + userID);
+        client.send(Type.CHAT + D + Command.PROMOTE + D + groupID + D + userID);
     }
 
     public static void removeAdmin(long groupID, long userID) throws IOException {
-        client.send(ClientCode.Type.CHAT + D + ClientCode.Command.DEMOTE + D + groupID + D + userID);
+        client.send(Type.CHAT + D + Command.DEMOTE + D + groupID + D + userID);
     }
 
     public static long getDialougeID(Message message) {
@@ -89,10 +84,10 @@ public class Messenger {
     public static void process(Command reqCommand, String[] requestParts, String[] responseParts) {
         switch (reqCommand) {
             case CREATE:
-                createGroupFrom(Long.parseLong(responseParts[0]), requestParts[0]);
+                createGroupAccepted(Long.parseLong(responseParts[0]), requestParts[0]);
                 break;
             case ADD:
-                addMemberFrom(Long.parseLong(requestParts[0]), Long.parseLong(requestParts[1]));
+                addMemberAccepted(Long.parseLong(requestParts[0]), Long.parseLong(requestParts[1]));
                 break;
             default:
         }

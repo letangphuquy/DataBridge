@@ -30,12 +30,27 @@ public class User extends Recipient {
 		// data[0] is recipientID/ userID
 		this.username = data[1];
 		this.profile = data[2];
+		assert data[2].length() >= Constants.NAME_MAX_LENGTH;
 		this.isBanned = Boolean.parseBoolean(data[3]);
 		this.isPrivate = Boolean.parseBoolean(data[4]);
 		this.reputation = Integer.parseInt(data[5]);
 	}
 
-    public long getUserID() {
+    @Override
+	protected Object clone() throws CloneNotSupportedException {
+		User clone = new User(toString());
+		clone.setIDs(toRecipient());
+		return clone;
+	}
+
+	public static User parse(String[] data) { // for Client
+		User user = new User(data);
+		long publicID = Long.parseLong(data[0]);
+		user.setIDs(publicID, publicID);
+		return user;
+	}
+
+	public long getUserID() {
 		try {
 			return super.getRecipientID();
 		} catch (Exception e) {
@@ -49,11 +64,24 @@ public class User extends Recipient {
 	}
 
 	public String getProfile() {
-		return profile;
+		return profile.substring(Constants.NAME_MAX_LENGTH);
 	}
 
 	public void setProfile(String profile) {
-		this.profile = profile;
+		this.profile = getName() + profile;
+	}
+
+	public void setName(String name) {
+		int delta = name.length() - Constants.NAME_MAX_LENGTH;
+		if (delta > 0)
+			name = name.substring(0, Constants.NAME_MAX_LENGTH);
+		if (delta < 0)
+			name = name + " ".repeat(-delta);
+		profile = name + getProfile();
+	}
+    
+	public String getName() {
+		return profile.substring(0, Constants.NAME_MAX_LENGTH);
 	}
 
 	public boolean isBanned() {
@@ -83,16 +111,13 @@ public class User extends Recipient {
 	public void setUsername(String username) {
 		this.username = username;
 	}
-    
-	public String getName() {
-		return profile.substring(0, Math.min(profile.length(), Constants.NAME_MAX_LENGTH)).trim();
-	}
 
     @Override
 	public String toString() {
 		return String.join(Constants.DELIMITER, Long.toString(getPublicID()), username, profile, Boolean.toString(isBanned), Boolean.toString(isPrivate), Integer.toString(reputation));
 	}
 
+	@Override
 	public Object[] toObjectArray() {
 		return new Object[] {getUserID(), username, profile, isBanned, isPrivate, reputation};
 	}

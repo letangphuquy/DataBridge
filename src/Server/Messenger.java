@@ -11,7 +11,7 @@ import Model.Recipient;
 import Rules.Constants;
 import Rules.ServerCode;
 import Rules.ClientCode.Command;
-import Server.Database.DatabaseUpdater;
+import Server.Database.DatabaseInserter;
 import Server.Database.Data;
 
 public class Messenger {
@@ -19,15 +19,16 @@ public class Messenger {
     private static final String D =  (String) Constants.DELIMITER;
 
     public static void process(ServerThread serverThread, Command command, String[] params) throws IOException {
+        int requestID = Integer.parseInt(params[params.length - 1]);
         switch (command) {
             case SEND:
                 receiveChat(serverThread, params);
                 break;
             case CREATE:
-                createGroup(serverThread, params[0], Integer.parseInt(params[1]));
+                createGroup(serverThread, params[0], requestID);
                 break;
             case ADD:
-                addGroupMember(serverThread, Long.parseLong(params[0]), Long.parseLong(params[1]), Integer.parseInt(params[2]));
+                addGroupMember(serverThread, Long.parseLong(params[0]), Long.parseLong(params[1]), requestID);
                 break;
             default:
                 break;
@@ -37,20 +38,21 @@ public class Messenger {
     private static void createGroup(ServerThread server, String groupName, int requestID) throws IOException {
         Group group = new Group(groupName);
         group.setIDs(Recipient.randomRecipient());
-        DatabaseUpdater.addGroup(group);
-        DatabaseUpdater.addGroupMember(group.getGroupID(), server.user.getUserID());
-        DatabaseUpdater.addGroupAdmin(group.getGroupID(), server.user.getUserID());
+        DatabaseInserter.addGroup(group);
+        DatabaseInserter.addGroupMember(group.getGroupID(), server.user.getUserID());
+        DatabaseInserter.addGroupAdmin(group.getGroupID(), server.user.getUserID());
         server.send(ServerCode.ACCEPT + D + requestID + D + group.getPublicID());
     }
 
     private static void addGroupMember(ServerThread server, long groupID, long userID, int requestID) throws IOException {
-        Group group = (Group) Data.recipients.get(groupID);
+        groupID = Data.publicIDToRecipientID.get(groupID);
+        userID = Data.publicIDToRecipientID.get(userID);
+        Group group = Data.groups.get(groupID);
         if (group == null) {
             server.send(ServerCode.REJECT + D + requestID + D + "Group does not exist");
             return;
         }
-        userID = Data.publicIDToRecipientID.get(userID);
-        if (!group.hasAdmin(userID)) {
+        if (!group.hasAdmin(server.user.getUserID())) {
             server.send(ServerCode.REJECT + D + requestID + D + "User is not allowed to add");
             return;
         }
@@ -59,7 +61,7 @@ public class Messenger {
             return;
         }
         server.send(ServerCode.ACCEPT + D + requestID);
-        DatabaseUpdater.addGroupMember(groupID, userID);
+        DatabaseInserter.addGroupMember(groupID, userID);
     }
 
     private static void sendMessage(long userID, Message message) throws IOException {
@@ -90,7 +92,7 @@ public class Messenger {
         System.out.println("Received message from " + senderID + " to " + receiverID + ": " + content);
         message = (isFile) ? receiveFileChat(server, message, content) : receiveNormalChat(server, message, content);
         //TODO: test sending to receiver
-        DatabaseUpdater.addMessage(message);
+        DatabaseInserter.addMessage(message);
         Recipient receiver = Data.recipients.get(receiverID);
         if (receiver.getType() == 'U') {
             sendMessage(receiverID, message);

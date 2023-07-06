@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.stream.Stream;
 
 import Model.*;
+import Rules.Relationship;
 
 import java.sql.ResultSet;
 import java.sql.ResultSetMetaData;
@@ -65,7 +66,7 @@ public class DatabaseLoader {
             long publicID = Long.parseLong(args[1]);
             char type = args[2].charAt(0);
             Recipient recipient = new Recipient(recipientID, publicID, type);
-            System.out.println("Recipient " + recipientID + " has publicID " + publicID + " and type " + type);
+            // System.out.println("Recipient " + recipientID + " has publicID " + publicID + " and type " + type);
             Data.recipients.put(recipientID, recipient);
             Data.publicIDToRecipientID.put(publicID, recipientID);
             Data.recipientIDToPublicID.put(recipientID, publicID);
@@ -77,8 +78,8 @@ public class DatabaseLoader {
             long userID = Long.parseLong(args[0]);
             assert(Data.recipients.containsKey(userID));
             Recipient recipient = Data.recipients.get(userID);
-            System.out.println(userID + " Got " + recipient);
-            user.setIDs(Data.recipients.get(userID));
+            user.setIDs(recipient);
+            System.out.println(user);
             Data.users.put(userID, user);
             Data.usernameToID.put(user.getUsername(), userID);
         }
@@ -110,6 +111,18 @@ public class DatabaseLoader {
             Data.groups.get(groupID).addAdmin(Data.users.get(userID));
         }
 
+        result = loadDatabase("Friendship");
+        for (var args : result) {
+            long userA = Long.parseLong(args[0]);
+            long userB = Long.parseLong(args[1]);
+            assert userA < userB;
+            Relationship attitudeA = Relationship.valueOf(args[2]);
+            Relationship attitudeB = Relationship.valueOf(args[3]);
+            UserPair pair = new UserPair(Data.users.get(userA), Data.users.get(userB));
+            pair.setAttitudes(attitudeA, attitudeB);
+            Data.relationships.put(pair, pair);
+        }
+
         System.out.println("LOAD database:\nUsers: " + Data.users.size() + " users");
         System.out.println("Passwords: " + Data.passwordOf.size() + " passwords");
         for (var entry : Data.passwordOf.entrySet()) {
@@ -120,7 +133,7 @@ public class DatabaseLoader {
     private static void dfs(String node, String path) {
         Data.pathToID.put(path, node);
         Data.idToPath.put(node, path);
-        System.out.println("File " + node + " has path " + path);
+        // System.out.println("File " + node + " has path " + path);
         if (Data.fileTree.containsKey(node)) {
             for (String child : Data.fileTree.get(node)) {
                 dfs(child, path + "\\" + Data.files.get(child).getFileName());

@@ -9,7 +9,7 @@ import Model.TypesConverter;
 import Model.User;
 import Rules.*;
 import Server.Database.Data;
-import Server.Database.DatabaseUpdater;
+import Server.Database.DatabaseInserter;
 public class Authenticator {
     private Authenticator() {}
     private static void onLogin(ServerThread server, User user) throws IOException {
@@ -65,7 +65,7 @@ public class Authenticator {
         Password password = new Password(username, saltString, hashedPassword);
         User user = new User(username);
         user.setIDs(Recipient.randomRecipient());
-        DatabaseUpdater.addUser(user, password);
+        DatabaseInserter.addUser(user, password);
 
         onLogin(server, user);
     }

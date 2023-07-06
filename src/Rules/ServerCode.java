@@ -20,6 +20,7 @@ package Rules;
  * - REJECT <_> [Request_ID] <_> [Details] (on request failure: file upload, ...)
  * - DATA <_> [Request_ID] <_> [Details] (for a specific request: file download, ...)
  * - CHAT <_> [Message object]
+ * - USER <_> [UserPair object] (on friend request, friend removal, or blocking)
  * 
  * MAJOR UPDATE:
  * ServerCode will be (somewhat) symmetrical to ClientCode
@@ -28,5 +29,5 @@ package Rules;
 public enum ServerCode {
     KEY,
     ACCEPT, REJECT, DATA, 
-    CHAT
+    CHAT, USER
 }
