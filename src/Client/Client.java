@@ -1,4 +1,6 @@
 package Client;
+import java.awt.event.*;
+
 import java.io.Console;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
@@ -15,11 +17,15 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
+import javax.swing.JOptionPane;
+
 import Model.E2ESocket;
 import Rules.ClientCode;
 import Rules.Constants;
 import Rules.HostAddress;
 import Rules.ServerCode;
+import View.AuthView;
+import View.Chat;
 
 public class Client extends E2ESocket {
     static Client instance = null;
@@ -28,6 +34,7 @@ public class Client extends E2ESocket {
 
     ArrayList<String> requests = new ArrayList<>();
     ArrayList<Thread> independentThreads = new ArrayList<>();
+    AuthView authView;
 
     private Client(Socket socket) {
         super(socket, false);
@@ -138,119 +145,161 @@ public class Client extends E2ESocket {
         }  
     }, "Server Listener");
 
-    private void showMenu() {
-        System.out.println("Welcome to DataBridge");
-        System.out.println("0. Register");
-        System.out.println("1. Login");
-        System.out.println("2. Logout");
-        System.out.println("3. Create directory");
-        System.out.println("4. Upload file");
-        System.out.println("5. Download file");
-        System.out.println("6. Chat");
-        System.out.println("7. Group");
-        System.out.print("Enter your choice: ");
-    }
+    private static class ConsoleApplication {
+        private ConsoleApplication() {}
 
-    private void promptUsernamePassword(Console console, String[] variables) {
-        System.out.print("Enter username: ");
-        String username = console.readLine();
-        System.out.print("Enter password: ");
-        String password = new String(console.readPassword());
-        System.out.println("You entered: " + username + "|" + password);
-        variables[0] = username;
-        variables[1] = password;
-    }
+        private static void showMenu() {
+            System.out.println("Welcome to DataBridge");
+            System.out.println("0. Register");
+            System.out.println("1. Login");
+            System.out.println("2. Logout");
+            System.out.println("3. Create directory");
+            System.out.println("4. Upload file");
+            System.out.println("5. Download file");
+            System.out.println("6. Chat");
+            System.out.println("7. Group");
+            System.out.print("Enter your choice: ");
+        }
 
-    private void consoleApplication() throws IOException {
-        Console console = System.console();
-        String line, temp[] = new String[2];
-        while ((line = console.readLine()) != null) {
-            if ("exit".equals(line)) break;
-            switch (line) {
-                case "0":
-                    promptUsernamePassword(console, temp);
-                    Authenticator.register(temp[0], temp[1]);
-                    break;
-                case "1":
-                    promptUsernamePassword(console, temp);
-                    Authenticator.login(temp[0], temp[1]);
-                    break;
-                case "2":
-                    Authenticator.logout();
-                    return;
-                case "3":
-                    System.out.println("Enter directory's name: ");
-                    String name = console.readLine();
-                    System.out.println("Enter directory's path (to its parent): ");
-                    String path = console.readLine();
-                    FileProcessor.createDirectory(name, path);
-                    break;
-                case "4":
-                    System.out.println("Enter source file's path:");
-                    String src = console.readLine();
-                    System.out.println("Enter destination filepath (on server's filesystem):");
-                    String dest = console.readLine();
-                    FileProcessor.upload(src, dest);
-                    break;
-                case "5":
-                    System.out.println("Enter (F) to download your own file or (S) to download shared ones");
-                    String choice = console.readLine();
-                    if ("F".equals(choice)) {
-                        System.out.println("Enter file's path (on server's filesystem):");
-                        path = console.readLine();
-                        FileProcessor.download(path);
-                    }
-                    else if ("S".equals(choice)) {
-                        System.out.println("Enter message's ID:");
-                        int msgID = Integer.parseInt(console.readLine());
-                        FileProcessor.download(msgID);
-                    }
-                    break;
-                case "6":
-                    System.out.println("Who do you want to chat with?");
-                    long userID = Long.parseLong(console.readLine());
-                    System.out.println("Are you sending file or normal chat (Y/N)?");
-                    choice = console.readLine();
-                    if ("Y".equals(choice)) {
+        private static void promptUsernamePassword(Console console, String[] variables) {
+            System.out.print("Enter username: ");
+            String username = console.readLine();
+            System.out.print("Enter password: ");
+            String password = new String(console.readPassword());
+            System.out.println("You entered: " + username + "|" + password);
+            variables[0] = username;
+            variables[1] = password;
+        }
+
+        public static void run() throws IOException {
+            int mode = -1;
+            if (mode != 0) return ;
+            showMenu();
+            Console console = System.console();
+            String line, temp[] = new String[2];
+            while ((line = console.readLine()) != null) {
+                if ("exit".equals(line)) break;
+                switch (line) {
+                    case "0":
+                        promptUsernamePassword(console, temp);
+                        Authenticator.register(temp[0], temp[1]);
+                        break;
+                    case "1":
+                        promptUsernamePassword(console, temp);
+                        Authenticator.login(temp[0], temp[1]);
+                        break;
+                    case "2":
+                        Authenticator.logout();
+                        return;
+                    case "3":
+                        System.out.println("Enter directory's name: ");
+                        String name = console.readLine();
+                        System.out.println("Enter directory's path (to its parent): ");
+                        String path = console.readLine();
+                        FileProcessor.createDirectory(name, path);
+                        break;
+                    case "4":
+                        System.out.println("Enter source file's path:");
+                        String src = console.readLine();
                         System.out.println("Enter destination filepath (on server's filesystem):");
-                        dest = console.readLine();
-                        Messenger.sendFileChat(dest, userID);;
-                    }
-                    else if ("N".equals(choice)) {
-                        System.out.println("Enter message:");
-                        String msg = console.readLine();
-                        Messenger.sendNormalChat(msg, userID);
-                    }
-                    break;
-                case "7":
-                    System.out.println("Enter (C) to create group, (A) to add member, (R) to remove member, (P) to assign new admin, (D) to remove admin, and (E) to edit group info");
-                    choice = console.readLine();
-                    if ("C".equals(choice)) {
-                        System.out.println("Enter group's name:");
-                        name = console.readLine();
-                        Messenger.createGroup(name);
-                    }
-                    else if ("A".equals(choice)) {
-                        System.out.println("Enter group's ID:");
-                        long groupID = Long.parseLong(console.readLine());
-                        System.out.println("Enter member's ID:");
-                        userID = Long.parseLong(console.readLine());
-                        Messenger.addMember(groupID, userID);
-                    }
-                    else {
-                        System.out.println("Unsupported yet. Try again later");
-                    }  
-                default: return;
+                        String dest = console.readLine();
+                        FileProcessor.upload(src, dest);
+                        break;
+                    case "5":
+                        System.out.println("Enter (F) to download your own file or (S) to download shared ones");
+                        String choice = console.readLine();
+                        if ("F".equals(choice)) {
+                            System.out.println("Enter file's path (on server's filesystem):");
+                            path = console.readLine();
+                            FileProcessor.download(path);
+                        }
+                        else if ("S".equals(choice)) {
+                            System.out.println("Enter message's ID:");
+                            int msgID = Integer.parseInt(console.readLine());
+                            FileProcessor.download(msgID);
+                        }
+                        break;
+                    case "6":
+                        System.out.println("Who do you want to chat with?");
+                        long userID = Long.parseLong(console.readLine());
+                        System.out.println("Are you sending file or normal chat (Y/N)?");
+                        choice = console.readLine();
+                        if ("Y".equals(choice)) {
+                            System.out.println("Enter destination filepath (on server's filesystem):");
+                            dest = console.readLine();
+                            Messenger.sendFileChat(dest, userID);;
+                        }
+                        else if ("N".equals(choice)) {
+                            System.out.println("Enter message:");
+                            String msg = console.readLine();
+                            Messenger.sendNormalChat(msg, userID);
+                        }
+                        break;
+                    case "7":
+                        System.out.println("Enter (C) to create group, (A) to add member, (R) to remove member, (P) to assign new admin, (D) to remove admin, and (E) to edit group info");
+                        choice = console.readLine();
+                        if ("C".equals(choice)) {
+                            System.out.println("Enter group's name:");
+                            name = console.readLine();
+                            Messenger.createGroup(name);
+                        }
+                        else if ("A".equals(choice)) {
+                            System.out.println("Enter group's ID:");
+                            long groupID = Long.parseLong(console.readLine());
+                            System.out.println("Enter member's ID:");
+                            userID = Long.parseLong(console.readLine());
+                            Messenger.addMember(groupID, userID);
+                        }
+                        else {
+                            System.out.println("Unsupported yet. Try again later");
+                        }  
+                    default: return;
+                }
             }
         }
     }
 
+    private static class AuthController {
+        private AuthController() {}
+        private static final AuthView gui = instance.authView;
+
+        private static boolean checkValid() {
+            String username = gui.getUsername();
+            String password = gui.getPassword();
+            if (username.length() > 0 && password.length() > 0) return true;
+            JOptionPane.showMessageDialog(null, "Please enter username and password", "Input required", JOptionPane.INFORMATION_MESSAGE);
+            return false;
+        }
+        public static void initialize() {
+            gui.loginButton.addActionListener(new ActionListener() {
+            	@Override
+                public void actionPerformed(ActionEvent evt) {
+                    try {
+                        if (checkValid() && Authenticator.login(gui.getUsername(), gui.getPassword())) {
+                            System.out.println("Logged in successfully");
+                        }
+                    } catch (Exception e) {}
+            	}
+            });
+            gui.registerButton.addActionListener(new ActionListener() {
+                @Override
+                public void actionPerformed(ActionEvent evt) {
+                    try {
+                        if (checkValid() && Authenticator.register(gui.getUsername(), gui.getPassword())) {
+                            System.out.println("Registered and logged in successfully");
+                        }
+                    } catch (Exception e) {}
+                }
+            });
+        }
+    }
+
     private void run() {
+        AuthController.initialize();
         //TODO: finish functions and test with the console app
-        showMenu();
         try {
             try {
-                consoleApplication();
+                ConsoleApplication.run();
             } catch (IOException e) {
                 System.out.println("Error in console application");
                 debug(e);
@@ -273,9 +322,9 @@ public class Client extends E2ESocket {
                 FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
                 // FileProcessor.download("in1\\in2\\in3\\independent_test.java");
             }
-            Authenticator.logout();
-            closeAll();
-            System.out.println("Done, closed all");
+            // Authenticator.logout();
+            // closeAll();
+            // System.out.println("Done, closed all");
         } catch (IOException e) {
             System.out.println("Error login-ing");
             debug(e);
@@ -287,6 +336,7 @@ public class Client extends E2ESocket {
     public static void main(String[] args) {
         try {
             instance = new Client(new Socket(HostAddress.HOSTNAME, HostAddress.PORT));
+            instance.authView = new AuthView();
             instance.run();
         } catch (UnknownHostException e) {
             System.out.println("Error connecting to server: Unknown host. Server may be down");

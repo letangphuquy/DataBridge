@@ -1,7 +1,8 @@
 package Client;
 
 import java.io.IOException;
-import java.util.stream.Stream;
+
+import javax.swing.JOptionPane;
 
 import Model.PasswordHasher;
 import Model.User;
@@ -19,9 +20,9 @@ public class Authenticator {
         if (!ServerCode.REJECT.toString().equals(parts[0])) {
             return false;
         }
-        System.out.print(action + " failed: ");
-        Stream.of(parts).skip(1).forEach((s) -> System.out.print(s + " "));
-        System.out.println();
+        String msg = "";
+        for (int i = 1; i < parts.length; i++) msg += parts[i] + " ";
+        JOptionPane.showMessageDialog(client.authView, msg, action + " failed", JOptionPane.ERROR_MESSAGE);
         return true;
     }
 
@@ -43,12 +44,12 @@ public class Authenticator {
      * 3. Send hashed password
      * 4. Receive user data
      */
-    public static void login(String username, String password) throws IOException {
+    public static boolean login(String username, String password) throws IOException {
         client.send(ClientCode.Type.AUTH + D + ClientCode.Command.LOGIN + D + username);
         
         String response = client.read();
         String[] parts = response.split(" ");
-        if (isAttemptFailed("Login", parts)) return;
+        if (isAttemptFailed("Login", parts)) return false;
 
         assert ServerCode.DATA.toString().equals(parts[0]);
         String salt = parts[1];
@@ -58,22 +59,23 @@ public class Authenticator {
         
         response = client.read();
         parts = response.split(" ");
-        if (isAttemptFailed("Login", parts)) return;
+        if (isAttemptFailed("Login", parts)) return false;
         
         assert ServerCode.ACCEPT.toString().equals(parts[0]);
         receiveUserData();
+        return true;
     }
 
     /*
      * Register procedure: more or less the same as login
      */
-    public static void register(String username, String password) throws IOException {
+    public static boolean register(String username, String password) throws IOException {
         client.send(ClientCode.Type.AUTH + D + ClientCode.Command.REGISTER + D + username);
 
         String response = client.read();
         System.out.println("Response: " + response);
         String[] parts = response.split(" ");
-        if (isAttemptFailed("Register", parts)) return ;
+        if (isAttemptFailed("Register", parts)) return false;
 
         assert ServerCode.DATA.toString().equals(parts[0]);
         String saltString = parts[1];
@@ -85,6 +87,7 @@ public class Authenticator {
         assert ServerCode.ACCEPT.toString().equals(parts[0]);
         
         receiveUserData();
+        return true;
     }
 
     public static void logout() throws IOException {

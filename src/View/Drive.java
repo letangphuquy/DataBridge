@@ -1,11 +1,9 @@
+package View;
+
 import java.awt.*;
 import java.awt.event.*;
 
 import javax.swing.*;
-
-import java.io.*;
-import java.net.Socket;
-import java.net.ServerSocket;
 
 public class Drive extends JFrame implements ActionListener {
     Menu Pan1;

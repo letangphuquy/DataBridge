@@ -1,5 +1,6 @@
-import java.awt.*;
+package View;
 
+import java.awt.*;
 import javax.swing.*;
 
 class Details {
