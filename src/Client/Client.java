@@ -25,7 +25,6 @@ import Rules.Constants;
 import Rules.HostAddress;
 import Rules.ServerCode;
 import View.AuthView;
-import View.Chat;
 
 public class Client extends E2ESocket {
     static Client instance = null;

@@ -6,26 +6,26 @@ import java.awt.event.*;
 import javax.swing.*;
 
 public class Drive extends JFrame implements ActionListener {
-    Menu Pan1;
-    List Pan2;
-    Info Pan3;
+    MenuPanel Pan1;
+    ListPanel Pan2;
+    MainPanel Pan3;
     JButton Plus;
     int k=4;
 
-    Mess[] TN = new Mess[100];
+    Sentence[] TN = new Sentence[100];
 
     Drive() {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         // Pan1 - Left
-        Pan1 = new Menu();
-        Pan1.select(2);
+        Pan1 = new MenuPanel();
+        Pan1.select(1);
 
         // Pan2 - Center
-        Pan2 = new List();
+        Pan2 = new ListPanel();
 
-        Pan2.add(new Partners(new ImageIcon("Icon\\home 32.png"), "Home", 1).getPanel());
-        Pan2.add(new Partners(new ImageIcon("Icon\\star 32.png"), "Stared", 2).getPanel());
-        Pan2.add(new Partners(new ImageIcon("Icon\\trash 32.png"), "Trash", 3).getPanel());
+        Pan2.addUser(new HoverItem(new ImageIcon("Icon\\home 32.png"), "Home", 1));
+        Pan2.addUser(new HoverItem(new ImageIcon("Icon\\star 32.png"), "Stared", 2));
+        Pan2.addUser(new HoverItem(new ImageIcon("Icon\\trash 32.png"), "Trash", 3));
 
         Plus = new JButton("Add", new ImageIcon("Icon\\add 32.png"));
             Plus.setBounds(100,30,170,50);
@@ -36,14 +36,14 @@ public class Drive extends JFrame implements ActionListener {
             Plus.setBackground(new Color(0xeeeeee));
             Plus.setHorizontalTextPosition(JButton.LEFT);
 
-        Pan2.add(Plus);
+        Pan2.addButton(Plus);
 
         // Pan3 - Right
         JPanel Line = new JPanel();
             Line.setBounds(10,110,660,5);
             Line.setBackground(new Color(0x949ba4));
 
-        Pan3 = new Info();
+        Pan3 = new MainPanel();
 
             Pan3.add(new Details(null, "Name", "Date", "Size", 1).getPanel());
             Pan3.add(Line);
@@ -62,15 +62,15 @@ public class Drive extends JFrame implements ActionListener {
         setLocationRelativeTo(null);
 
         add(Plus);
-        add(Pan1.getPanel());
-        add(Pan2.getPanel());
-        add(Pan3.getPanel());
+        add(Pan1);
+        add(Pan2);
+        add(Pan3);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==Plus){
-            Pan2.add(new Partners(new ImageIcon("Icon\\folder 32.png"), "Folder", k).getPanel());
+            Pan2.addUser(new HoverItem(new ImageIcon("Icon\\folder 32.png"), "Folder", k));
             k+=1;
             revalidate();
             repaint();

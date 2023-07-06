@@ -1,35 +1,28 @@
 package View;
 
-import java.awt.*;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
 import javax.swing.*;
 
-import java.io.*;
-import java.net.Socket;
-import java.net.ServerSocket;
-
 public class Profile extends JFrame {
-    Menu Pan1;
-    List Pan2;
-    Info Pan3;
-    Mess[] TN = new Mess[100];
+    MenuPanel Pan1;
+    ListPanel Pan2;
+    MainPanel Pan3;
+    Sentence[] TN = new Sentence[100];
 
     Profile() {
         // Pan1 - Left
-        Pan1 = new Menu();
+        Pan1 = new MenuPanel();
         Pan1.select(3);
 
         // Pan2 - Center
-        Pan2 = new List();
+        Pan2 = new ListPanel();
 
-        Pan2.add(new Partners("Information", 1).getPanel());
-        Pan2.add(new Partners("Username", 2).getPanel());
-        Pan2.add(new Partners("Password", 3).getPanel());
-        Pan2.add(new Partners("Setting", 4).getPanel());
+        Pan2.addUser(new HoverItem("Information", 1));
+        Pan2.addUser(new HoverItem("Username", 2));
+        Pan2.addUser(new HoverItem("Password", 3));
+        Pan2.addUser(new HoverItem("Setting", 4));
         
         // Pan3 - Right
-        Pan3 = new Info();
+        Pan3 = new MainPanel();
         JLabel Avt = new JLabel(new ImageIcon("Icon\\monkey 128.png"));
             Avt.setBounds(36,100,128,128);
 
@@ -52,8 +45,8 @@ public class Profile extends JFrame {
         setVisible(true);
         setLocationRelativeTo(null);
 
-        add(Pan1.getPanel());
-        add(Pan2.getPanel());
-        add(Pan3.getPanel());
+        add(Pan1);
+        add(Pan2);
+        add(Pan3);
     }
 }
