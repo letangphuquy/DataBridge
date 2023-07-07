@@ -22,7 +22,7 @@ public class Authenticator {
         }
         String msg = "";
         for (int i = 1; i < parts.length; i++) msg += parts[i] + " ";
-        JOptionPane.showMessageDialog(client.authView, msg, action + " failed", JOptionPane.ERROR_MESSAGE);
+        JOptionPane.showMessageDialog(client.currentFrame, msg, action + " failed", JOptionPane.ERROR_MESSAGE);
         return true;
     }
 

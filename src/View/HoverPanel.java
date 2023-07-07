@@ -9,6 +9,15 @@ import java.awt.event.MouseEvent;
 public class HoverPanel extends JPanel {
     protected Color normalColor;
     protected Color hoverColor;
+    Component attachment = null;
+    
+    public void setChildren(Component attachment) {
+        this.attachment = attachment;
+    }
+
+    public Component getChildren() {
+        return attachment;
+    }
     
     public void setHoverColor(Color hoverColor) {
         this.hoverColor = hoverColor;
@@ -22,6 +31,10 @@ public class HoverPanel extends JPanel {
     public void setColor(Color normalColor, Color hoverColor) {
         setNormalColor(normalColor);
         setHoverColor (hoverColor);
+    }
+
+    public void swapColor() {
+        setColor(hoverColor, normalColor);
     }
 
     public HoverPanel() {

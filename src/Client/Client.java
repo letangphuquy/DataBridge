@@ -1,5 +1,4 @@
 package Client;
-import java.awt.event.*;
 
 import java.io.Console;
 import java.io.FileNotFoundException;
@@ -17,7 +16,7 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.stream.Stream;
 
-import javax.swing.JOptionPane;
+import javax.swing.JFrame;
 
 import Model.E2ESocket;
 import Rules.ClientCode;
@@ -33,17 +32,20 @@ public class Client extends E2ESocket {
 
     ArrayList<String> requests = new ArrayList<>();
     ArrayList<Thread> independentThreads = new ArrayList<>();
-    AuthView authView;
+    JFrame currentFrame = null;
 
     private Client(Socket socket) {
         super(socket, false);
         initDebugger();
     }
 
-    @Override
-    public void send(String msg) throws IOException {
-        // System.out.println("Hi, I'm going to send: " + msg);
-        super.send(msg);
+    public void changeFrame(JFrame frame) {
+        if (currentFrame != null) {
+            currentFrame.setVisible(false);
+            currentFrame.dispose();
+        }
+        currentFrame = frame;
+        currentFrame.setVisible(true);
     }
 
     public void sendRequest(String msg) throws IOException {
@@ -258,43 +260,8 @@ public class Client extends E2ESocket {
         }
     }
 
-    private static class AuthController {
-        private AuthController() {}
-        private static final AuthView gui = instance.authView;
-
-        private static boolean checkValid() {
-            String username = gui.getUsername();
-            String password = gui.getPassword();
-            if (username.length() > 0 && password.length() > 0) return true;
-            JOptionPane.showMessageDialog(null, "Please enter username and password", "Input required", JOptionPane.INFORMATION_MESSAGE);
-            return false;
-        }
-        public static void initialize() {
-            gui.loginButton.addActionListener(new ActionListener() {
-            	@Override
-                public void actionPerformed(ActionEvent evt) {
-                    try {
-                        if (checkValid() && Authenticator.login(gui.getUsername(), gui.getPassword())) {
-                            System.out.println("Logged in successfully");
-                        }
-                    } catch (Exception e) {}
-            	}
-            });
-            gui.registerButton.addActionListener(new ActionListener() {
-                @Override
-                public void actionPerformed(ActionEvent evt) {
-                    try {
-                        if (checkValid() && Authenticator.register(gui.getUsername(), gui.getPassword())) {
-                            System.out.println("Registered and logged in successfully");
-                        }
-                    } catch (Exception e) {}
-                }
-            });
-        }
-    }
-
     private void run() {
-        AuthController.initialize();
+        Controllers.AuthController.initialize();
         //TODO: finish functions and test with the console app
         try {
             try {
@@ -335,7 +302,7 @@ public class Client extends E2ESocket {
     public static void main(String[] args) {
         try {
             instance = new Client(new Socket(HostAddress.HOSTNAME, HostAddress.PORT));
-            instance.authView = new AuthView();
+            instance.changeFrame(new AuthView());
             instance.run();
         } catch (UnknownHostException e) {
             System.out.println("Error connecting to server: Unknown host. Server may be down");

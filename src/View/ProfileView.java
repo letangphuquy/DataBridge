@@ -2,13 +2,13 @@ package View;
 
 import javax.swing.*;
 
-public class Profile extends JFrame {
+public class ProfileView extends JFrame {
     MenuPanel Pan1;
     ListPanel Pan2;
     MainPanel Pan3;
     Sentence[] TN = new Sentence[100];
 
-    Profile() {
+    public ProfileView() {
         // Pan1 - Left
         Pan1 = new MenuPanel();
         Pan1.select(3);

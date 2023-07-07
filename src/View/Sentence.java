@@ -24,7 +24,7 @@ class Sentence {
         Panel.setBounds(30,Y*50+50,550,50);
     }
 
-    Sentence(ImageIcon icon, String tn, int y){
+    Sentence(ImageIcon icon, String msg, int y){
 
         setColor(new Color(0x313338), new Color(0x575b64));
         Y=y;
@@ -32,7 +32,7 @@ class Sentence {
         Icon = new JLabel(icon);
         Icon.setBounds(0,0,32,50);
 
-        Mess = new JLabel(tn);
+        Mess = new JLabel(msg);
         Mess.setForeground(new Color(0xFFFFFF));
         Mess.setFont(new Font("Comfortaa",Font.PLAIN,24));
         Mess.setBounds(50,0,500,50);
@@ -52,11 +52,6 @@ class Sentence {
 /*
 class Sentence extends HoverItem {
     private int y;
-
-    public void setColor(Color normalColor, Color hoverColor) {
-        setNormalColor(normalColor);
-        setHoverColor(hoverColor);
-    }
 
     public int getY() {
         return y;

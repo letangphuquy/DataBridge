@@ -5,7 +5,7 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-public class Drive extends JFrame implements ActionListener {
+public class DriveView extends JFrame implements ActionListener {
     MenuPanel Pan1;
     ListPanel Pan2;
     MainPanel Pan3;
@@ -14,7 +14,7 @@ public class Drive extends JFrame implements ActionListener {
 
     Sentence[] TN = new Sentence[100];
 
-    Drive() {
+    public DriveView() {
         Thread.currentThread().setPriority(Thread.MAX_PRIORITY);
         // Pan1 - Left
         Pan1 = new MenuPanel();
