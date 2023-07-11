@@ -17,6 +17,7 @@ import java.util.HashSet;
 import java.util.stream.Stream;
 
 import javax.swing.JFrame;
+import javax.swing.SwingUtilities;
 
 import Model.E2ESocket;
 import Rules.ClientCode;
@@ -45,6 +46,7 @@ public class Client extends E2ESocket {
             currentFrame.dispose();
         }
         currentFrame = frame;
+        currentFrame.addWindowListener(Controllers.GeneralController.closeWindow);
         currentFrame.setVisible(true);
     }
 
@@ -260,8 +262,18 @@ public class Client extends E2ESocket {
         }
     }
 
+    public void terminate() {
+        try {
+            Authenticator.logout();
+            closeAll();
+            System.out.println("Done, closed all");
+        } catch (IOException e) {
+            System.out.println("Error in terminating client");
+            debug(e);
+        }
+    }
+
     private void run() {
-        Controllers.AuthController.initialize();
         //TODO: finish functions and test with the console app
         try {
             try {
@@ -288,9 +300,7 @@ public class Client extends E2ESocket {
                 FileProcessor.upload("E:\\Computer Science\\z News\\Danh sach \u0111i\u1EC7n SV T5.2023.xls", "in1");
                 // FileProcessor.download("in1\\in2\\in3\\independent_test.java");
             }
-            // Authenticator.logout();
-            // closeAll();
-            // System.out.println("Done, closed all");
+            // terminate();
         } catch (IOException e) {
             System.out.println("Error login-ing");
             debug(e);
@@ -302,7 +312,13 @@ public class Client extends E2ESocket {
     public static void main(String[] args) {
         try {
             instance = new Client(new Socket(HostAddress.HOSTNAME, HostAddress.PORT));
-            instance.changeFrame(new AuthView());
+            SwingUtilities.invokeLater(new Runnable() {
+                @Override
+                public void run() {
+                    instance.changeFrame(new AuthView());
+                    Controllers.AuthController.initialize();
+                }
+            });
             instance.run();
         } catch (UnknownHostException e) {
             System.out.println("Error connecting to server: Unknown host. Server may be down");

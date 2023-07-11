@@ -4,6 +4,8 @@ import java.io.IOException;
 
 import javax.swing.JOptionPane;
 
+import Model.Group;
+import Model.Message;
 import Model.PasswordHasher;
 import Model.User;
 import Rules.ClientCode;
@@ -28,12 +30,46 @@ public class Authenticator {
 
     //Quick note: "blocking" communication
     private static void receiveUserData() throws IOException {
+        System.out.println("RECEIVING USER DATA");
         String response = client.read();
-        String[] parts = response.split((String) Constants.DELIMITER);
+        String[] parts = response.split(D);
         client.user = new User(parts);
         client.user.setIDs(Constants.DEFAULT_ID, Long.parseLong(parts[0])); // important for messaging
-        client.serverListener.start();
         //TODO: receive information about friends, chat messages, files, etc.
+        response = client.read();
+        assert response.startsWith(ServerCode.DATA + " FRIENDS");
+        parts = response.split(" ");
+        int friendsCount = Integer.parseInt(parts[2]);
+        for (int i = 0; i < friendsCount; i++) {
+            response = client.read();
+            parts = response.split(D);
+            User friend = new User(parts);
+            friend.setIDs(Constants.DEFAULT_ID, Long.parseLong(parts[0]));
+            System.out.println("Friend: " + friend);
+        }
+
+        response = client.read();
+        assert response.startsWith(ServerCode.DATA + " GROUPS");
+        parts = response.split(" ");
+        int groupsCount = Integer.parseInt(parts[2]);
+        for (int i = 0; i < groupsCount; i++) {
+            response = client.read();
+            parts = response.split(D);
+            Group group = new Group(parts);
+            System.out.println("Group: " + group);
+        }
+
+        response = client.read();
+        assert response.startsWith(ServerCode.DATA + " MESSAGES");
+        parts = response.split(" ");
+        int messagesCount = Integer.parseInt(parts[2]);
+        for (int i = 0; i < messagesCount; i++) {
+            response = client.read();
+            parts = response.split(D);
+            Message message = Message.parse(parts);
+            System.out.println("Message: " + message);
+        }
+        client.serverListener.start();
     }
 
     /*

@@ -1,7 +1,9 @@
 package Server;
 
 import java.io.IOException;
+import java.util.ArrayList;
 
+import Model.Message;
 import Model.Password;
 import Model.RandomGenerator;
 import Model.Recipient;
@@ -15,9 +17,38 @@ public class Authenticator {
     private static void onLogin(ServerThread server, User user) throws IOException {
         //TODO: send user data
         server.user = user;
-        ServerThread.activeUsers.put(user.getUserID(), server);
+        long userID = user.getUserID();
+        ServerThread.activeUsers.put(userID, server);
         server.send(ServerCode.ACCEPT.toString()); //sending ACCEPT to differs from REJECT in case of wrong password
         server.send(user.toString());
+
+        var friendsList = Data.friendsOf.get(userID);
+        int friendsCount = friendsList == null ? 0 : friendsList.size();
+        server.send(ServerCode.DATA + " FRIENDS " + friendsCount);
+        if (friendsCount > 0)
+            for (long friendID : friendsList)
+                server.send(Data.users.get(friendID).toString());
+        
+        var groupsList = Data.groupsOf.get(userID);
+        int groupsCount = groupsList == null ? 0 : groupsList.size();
+        server.send(ServerCode.DATA + " GROUPS " + groupsCount);
+        if (groupsCount > 0)
+            for (long groupID : groupsList)
+                server.send(Data.groups.get(groupID).toString());
+
+        groupsList.add(userID);
+        ArrayList<Message> messages = new ArrayList<>();
+        for (long groupID : groupsList) {
+            for (var message : Data.recipients.get(groupID).getMessages()) {
+                //NOTE: send publicID instead of recipientID (important!)
+                message.setSenderID(Data.recipientIDToPublicID.get(message.getSenderID()));
+                message.setReceiverID(Data.recipientIDToPublicID.get(message.getReceiverID()));
+                messages.add(message); //already is a sub class instance
+            }
+        }
+        server.send(ServerCode.DATA + " MESSAGES " + messages.size());
+        for (var message : messages)
+            server.send(message.toString());
     }
 
     /*

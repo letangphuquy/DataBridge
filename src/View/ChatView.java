@@ -75,7 +75,7 @@ public class ChatView extends JFrame {
         add(menu);
         add(dialougeList);
         add(chatPanel);
-        debug(chatPanel);
+        // debug(chatPanel);
         changeDialouge(0);
     }
 

@@ -33,6 +33,13 @@ public class Message implements DatabaseModel {
         sendTime = Timestamp.valueOf(args[4]);
     }
 
+    public static Message parse(String[] args) {
+        // returns subclass of Message
+        Message message = new Message(args);
+        message = message.isFile ? new FileLink(message, args[5]) : new NormalMessage(message, args[5]);
+        return message;
+    }
+
     public long getReceiverID() {
         return receiverID;
     }
@@ -47,6 +54,14 @@ public class Message implements DatabaseModel {
 
     public void setID(int messageID) {
         this.messageID = messageID;
+    }
+
+    public void setSenderID(long senderID) {
+        this.senderID = senderID;
+    }
+
+    public void setReceiverID(long receiverID) {
+        this.receiverID = receiverID;
     }
 
     @Override

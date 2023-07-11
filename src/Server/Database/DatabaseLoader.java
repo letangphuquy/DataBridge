@@ -101,7 +101,7 @@ public class DatabaseLoader {
         for (var args : result) {
             long groupID = Long.parseLong(args[0]);
             long userID = Long.parseLong(args[1]);
-            Data.groups.get(groupID).addMember(Data.users.get(userID));
+            HeapDataManager.addGroupMember(groupID, userID);
         }
 
         result = loadDatabase("GroupOwnership");
@@ -120,7 +120,7 @@ public class DatabaseLoader {
             Relationship attitudeB = Relationship.valueOf(args[3]);
             UserPair pair = new UserPair(Data.users.get(userA), Data.users.get(userB));
             pair.setAttitudes(attitudeA, attitudeB);
-            Data.relationships.put(pair, pair);
+            HeapDataManager.addRelationship(pair);
         }
 
         System.out.println("LOAD database:\nUsers: " + Data.users.size() + " users");
@@ -146,17 +146,12 @@ public class DatabaseLoader {
         ArrayList<String> roots = new ArrayList<>();
         for (var args : result) {
             DFile file = new DFile(args);
+            HeapDataManager.addFile(file, null);
             String parent = file.getParentID();
-            if (parent != null) {
-                if (!Data.fileTree.containsKey(parent))
-                    Data.fileTree.put(parent, new ArrayList<>());
-                Data.fileTree.get(parent).add(file.getFileID());
-            }
-            else {
+            if (parent == null) {
                 System.out.println("Root file " + file.getFileID() + " has uploader " + file.getUploaderID() + " and name " + file.getFileName());
                 roots.add(file.getFileID());
             }
-            Data.files.put(file.getFileID(), file);
         }
         for (String root : roots) {
             DFile file = Data.files.get(root);
@@ -168,8 +163,7 @@ public class DatabaseLoader {
         var result = loadDatabaseWithOrder("Messages", new String[]{"sent_at"});
         for (var args : result) {
             Message message = new Message(args);
-            Data.messages.put(message.getMessageID(), message);
-            Data.recipients.get(message.getReceiverID()).addMessage(message);
+            HeapDataManager.addMessage(message, false);
             Data.messageID = Math.max(Data.messageID, message.getMessageID());
         }
         
@@ -177,14 +171,14 @@ public class DatabaseLoader {
         for (var args : result) {
             int messageID = Integer.parseInt(args[0]);
             String fileID = args[1];
-            Data.messages.compute(messageID, (Integer msgID, Message msg) -> new FileLink(msg, fileID));
+            HeapDataManager.addMessage(new FileLink(Data.messages.get(messageID), fileID), true);
         }
-
+        
         result = loadDatabase("NormalMessages");
         for (var args : result) {
             int messageID = Integer.parseInt(args[0]);
             String content = args[1];
-            Data.messages.compute(messageID, (Integer msgID, Message msg) -> new NormalMessage(msg, content));
+            HeapDataManager.addMessage(new NormalMessage(Data.messages.get(messageID), content), true);
         }
     }
 }

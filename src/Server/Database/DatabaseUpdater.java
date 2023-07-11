@@ -90,7 +90,7 @@ public class DatabaseUpdater {
                 pair.setAttitudeB(oldPair.getAttitudeB());
             else
                 pair.setAttitudeA(oldPair.getAttitudeA());
-            Data.relationships.put(pair, pair);
+            HeapDataManager.addRelationship(pair);
         }
 
         try {

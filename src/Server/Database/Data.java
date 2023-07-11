@@ -49,6 +49,11 @@ public class Data {
     public static int messageID = 0;
     public static HashMap<Integer, Message> messages = new HashMap<>(); 
 
+    // User-related (for login)
+    public static HashMap<Long, HashSet<Long>> friendsOf = new HashMap<>();
+    public static HashMap<Long, HashSet<Long>> groupsOf = new HashMap<>();
+    public static HashMap<Long, HashSet<String>> filesOf = new HashMap<>();
+
     public static String[] getColumnsOf(String tableName) {
         if (!columnsOf.containsKey(tableName)) {
             var metadata = metadataOf.get(tableName);

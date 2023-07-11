@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 // import java.sql.ResultSetMetaData;
 import java.sql.SQLException;
-import java.util.ArrayList;
 
 import Model.DFile;
 import Model.FileLink;
@@ -88,17 +87,14 @@ public class DatabaseInserter {
     }
     
     public static void addGroupMember(long groupID, long userID) {
-        User user = Data.users.get(userID);
         assert Data.recipients.get(groupID) != null;
-        Data.groups.compute(groupID, (Long id, Group group) -> {
-            try {
-                addToTable("GroupMembership", new Object[] {groupID, userID});
-            } catch (SQLException e) {
-                System.out.println("Error adding user " + user.getUserID() + " to group " + group.getName() + " in database");
-                e.printStackTrace();
-            }
-            return group.addMember(user);
-        });
+        HeapDataManager.addGroupMember(groupID, userID);
+        try {
+            addToTable("GroupMembership", new Object[] {groupID, userID});
+        } catch (SQLException e) {
+            System.out.println("Error adding user to group in database");
+            e.printStackTrace();
+        }
     }
 
     public static void addGroupAdmin(long groupID, long userID) {
@@ -116,6 +112,7 @@ public class DatabaseInserter {
     
     public static void addRelationship(UserPair pair) {
         Data.relationships.put(pair, pair);
+        HeapDataManager.addRelationship(pair);
         try {
             addToTable("Friendship", pair.toObjectArray());
         } catch (SQLException e) {
@@ -125,14 +122,7 @@ public class DatabaseInserter {
     }
 
     public static void addFile(String path, DFile file) {
-        Data.files.put(file.getFileID(), file);
-        Data.idToPath.put(file.getFileID(), path);
-        Data.pathToID.put(path, file.getFileID());
-        if (!Data.fileTree.containsKey(path))
-            Data.fileTree.put(path, new ArrayList<String>());
-        else
-            Data.fileTree.get(path).add(file.getFileID());
-
+        HeapDataManager.addFile(file, path);
         try {
             addToTable("Files", file.toObjectArray());
         } catch (SQLException e) {
@@ -177,10 +167,6 @@ public class DatabaseInserter {
             e.printStackTrace();
         }
 
-        Data.messages.put(message.getMessageID(), message);
-        long receiverID = message.getReceiverID();
-        Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {
-            return recipient.addMessage(message);
-        });
+        HeapDataManager.addMessage(message, true);
     }
 }

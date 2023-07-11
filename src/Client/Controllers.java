@@ -57,6 +57,7 @@ public class Controllers {
                         if (checkValid() && Authenticator.login(gui.getUsername(), gui.getPassword())) {
                             System.out.println("Logged in successfully");
                             instance.changeFrame(new ChatView());
+                            ChatController.initialize();
                         }
                     } catch (Exception e) {}
                 }
@@ -68,6 +69,7 @@ public class Controllers {
                         if (checkValid() && Authenticator.register(gui.getUsername(), gui.getPassword())) {
                             System.out.println("Registered and logged in successfully");
                             instance.changeFrame(new ChatView());
+                            ChatController.initialize();
                         }
                     } catch (Exception e) {}
                 }
@@ -75,4 +77,26 @@ public class Controllers {
         }
     }
 
+    public static class ChatController {
+        private ChatController() {}
+        // private static final ChatView gui = (ChatView) instance.currentFrame;
+
+        public static void initialize() {
+            
+        }
+    }
+
+    public static class GeneralController {
+        private GeneralController() {}
+        public static WindowAdapter closeWindow = new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                instance.terminate();
+            }
+        };
+
+        public static void loadDataIntoGUI() {
+
+        }
+    }
 }

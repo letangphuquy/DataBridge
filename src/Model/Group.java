@@ -68,6 +68,11 @@ public class Group extends Recipient {
     public boolean hasAdmin(long userID) {
         return adminIDs.contains(userID);
     }
+
+    @Override
+	public String toString() {
+		return String.join(Constants.DELIMITER, Long.toString(getPublicID()), name);
+	}
     
     @Override
     public Object[] toObjectArray() {

@@ -44,6 +44,18 @@ public class UserPair implements DatabaseModel {
         return attitudeB;
     }
 
+    public Relationship getStatus() {
+        return status;
+    }
+
+    public long getUserA() {
+        return userA.getUserID();
+    }
+
+    public long getUserB() {
+        return userB.getUserID();
+    }
+    
     @Override
     public boolean equals(Object obj) {
         return obj instanceof UserPair
@@ -66,5 +78,4 @@ public class UserPair implements DatabaseModel {
     public String toString() {
         return String.join(Constants.DELIMITER, new String[] { userA.getPublicID() + "", userB.getPublicID() + "", attitudeA.toString(), attitudeB.toString()});
     }
-
 }

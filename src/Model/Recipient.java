@@ -56,6 +56,10 @@ public class Recipient implements DatabaseModel {
 		return this;
 	}
 
+	public ArrayList<Message> getMessages() {
+		return messages;
+	}
+
 	public static Recipient randomRecipient() {
         long recipientID = Constants.DEFAULT_ID;
         do {
