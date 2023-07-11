@@ -1,15 +1,17 @@
 package View;
 
-import java.awt.*;
 import javax.swing.*;
+
+import Rules.GUI;
 
 class ListPanel extends JPanel {
     ListPanel() {
-        setBackground(new Color(0x2b2d31));
-        setBounds(70, 0, 230, 750);
+        setBackground(GUI.COLOR_LIST);
+        setBounds(50, 0, 230, 750);
         setLayout(null);
     }
-    JPanel selector = null;
+    /*
+    private JPanel selector = null;
     private void deselect() {
         if (selector != null) remove(selector);
     }
@@ -20,6 +22,7 @@ class ListPanel extends JPanel {
         selector.setBounds(0, y*50+50, 230, 50);
         add(selector);
     }
+     */
 
     public void addUser(JPanel user) {
         add(user);

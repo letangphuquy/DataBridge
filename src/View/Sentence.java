@@ -3,6 +3,8 @@ package View;
 import java.awt.*;
 import javax.swing.*;
 
+import Rules.GUI;
+
 //WHAT THE ****?
 // /*
 class Sentence {
@@ -34,12 +36,12 @@ class Sentence {
 
         Mess = new JLabel(msg);
         Mess.setForeground(new Color(0xFFFFFF));
-        Mess.setFont(new Font("Comfortaa",Font.PLAIN,24));
+        Mess.setFont(GUI.P_SANS);
         Mess.setBounds(50,0,500,50);
 
+        Panel.setLayout(null);
         Panel.add(Mess);
         Panel.add(Icon);
-        Panel.setLayout(null);
         Panel.setBounds(30,Y*50+50,550,50);
         Panel.setBackground(new Color(0x313338));
     }
