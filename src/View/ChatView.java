@@ -12,13 +12,11 @@ public class ChatView extends JFrame {
     MenuPanel menu;
     ListPanel dialougeList;
     ChatPanel chatPanel;
-    JScrollPane contentScroller; JPanel messageList;
     HoverItem[] users = new HoverItem[100];
     Sentence[] messages = new Sentence[100];
 
-    private static final int WIDTH = 650;
     private int numUsers = 4;
-    private int numMessages = 5;
+    private int numMessages = 20;
 
     private int prevIdx = -1;
     private void changeDialouge(int idx) {
@@ -28,10 +26,8 @@ public class ChatView extends JFrame {
         prevIdx = idx;
         remove(chatPanel);
         chatPanel = (ChatPanel) users[idx].getChildren();
-        // contentScroller = new JScrollPane(chatPanel,  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        // remove(contentScroller);
-        // add(contentScroller);
         add(chatPanel);
+        revalidate();
         repaint();
     }
 
@@ -40,7 +36,7 @@ public class ChatView extends JFrame {
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLayout(null);
         setSize(GUI.WIDTH, GUI.HEIGHT);
-        // setResizable(false);
+        setResizable(false);
         setLocationRelativeTo(null);
         setVisible(true);
 
@@ -55,7 +51,7 @@ public class ChatView extends JFrame {
 
         for (int i = 0; i < numUsers; i++) {
             dialougeList.addItem(users[i]);
-            users[i].setChildren(new ChatPanel(null));
+            users[i].setChildren(new ChatPanel());
             final int idx = i;
             users[i].addMouseListener(new MouseAdapter() {
                 @Override
@@ -72,69 +68,15 @@ public class ChatView extends JFrame {
             messages[i] = new Sentence(new ImageIcon("images\\crocodile 32.png"), "This is my talkshow " + i, i+1);
         }
 
-        messageList = new JPanel();
-        // messageList.setLayout(null);
-        var messageSize = new Dimension(WIDTH, numMessages * 50 + 100);
-        messageList.setPreferredSize(messageSize);
-        // messageList.setLayout(new BoxLayout(messageList, BoxLayout.Y_AXIS));
-        // messageSize = new Dimension(700, 500);
-        // messageList.setBackground(new Color(0x2b2d31));
-        messageList.setBackground(Color.BLUE); // DEBUG
-        // for (int i = 0; i < numMessages; i++) {
-        //     messageList.add(messages[i].getPanel());
-        // }
-        /*
-        JLabel Up = new JLabel(new ImageIcon("images\\up 32.png"));
-        Up.setBounds(630, 550, 32, 32);
-        Up.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                for (int j = 0; j < numMessages; j++){
-                    messages[j].setY(messages[j].getY() + 1);
-                    //conversation.repaint();
-                }
-            }
-        });
-        
-        JLabel Down = new JLabel(new ImageIcon("images\\down 32.png"));
-        Down.setBounds(630, 600, 32, 32);
-        Down.addMouseListener(new MouseAdapter() {
-                @Override
-                public void mouseClicked(MouseEvent e) {
-                    for (int j = 0; j < numMessages; j++){
-                        messages[j].setY(messages[j].getY() - 1);
-                        //conversation.repaint();
-                    }
-                }
-            });
-            chatPanel.add(Up);
-            chatPanel.add(Down);
-            */
-        
-        // /*
-        var testPanel = new JPanel();
-        testPanel.setBackground(Color.GREEN);
-        testPanel.setPreferredSize(new Dimension(WIDTH, 2000));
-        contentScroller = new JScrollPane(messageList,  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        contentScroller = new JScrollPane(testPanel,  JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
-        contentScroller.setPreferredSize(new Dimension(WIDTH, GUI.HEIGHT));
-        contentScroller.getVerticalScrollBar().setUnitIncrement(20);
-        //  */
-        
-        users[0].setChildren(new ChatPanel(messageList));
-        users[0].setChildren(new ChatPanel(contentScroller));
         chatPanel = (ChatPanel) users[0].getChildren();
-
+        for (int i = 0; i < numMessages; i++) 
+            chatPanel.addMessage(messages[i]);
         
         add(menu);
         add(dialougeList);
         add(chatPanel);
-        // setContentPane(contentScroller);
-        // debug(contentScroller);
-        changeDialouge(0);
         debug(chatPanel);
-        revalidate();
-        repaint();
+        changeDialouge(0);
     }
 
     private void debug(Container parent) {

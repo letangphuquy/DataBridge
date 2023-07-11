@@ -2,23 +2,31 @@ package View;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
-import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.Font;
 
+import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextField;
 
 import Rules.GUI;
 
 public class ChatPanel extends MainPanel {
+    private static final int WIDTH = 650;
+
     public JButton sendButton;
-    public ChatPanel(Component content) {
+    public JTextField chatTextfield;
+    private MessagePanel messageList;
+
+    public JTextField searchField;
+    public JButton searchButton;
+
+    public ChatPanel() {
         setLayout(new BorderLayout());
-        // setLayout(null);
-        setPreferredSize(new Dimension(650, GUI.HEIGHT));
+        setPreferredSize(new Dimension(WIDTH, GUI.HEIGHT));
         setBackground(GUI.COLOR_MAIN);
         
         Color textInputColor = GUI.COLOR_LIST.darker();
@@ -29,8 +37,8 @@ public class ChatPanel extends MainPanel {
         textInputer.setSize(textInputerSize);
         textInputer.setBackground(GUI.COLOR_MAIN);
         
-        JTextField chatTextfield = new JTextField();
-        chatTextfield.setFont(new Font("Comfortaa",Font.PLAIN,16));
+        chatTextfield = new JTextField();
+        chatTextfield.setFont(GUI.P_SANS);
         chatTextfield.setBounds(10, 0, 630, 40);
         chatTextfield.setBackground(textInputColor);
         chatTextfield.setForeground(new Color(0xFFFFFF));
@@ -44,19 +52,63 @@ public class ChatPanel extends MainPanel {
 
         textInputer.add(chatTextfield);
         textInputer.add(sendButton);
-        if (getLayout() instanceof BorderLayout) {
-            // if (content != null)
-            //     System.out.println("The chat panel is using BorderLayout");
-            add(textInputer, BorderLayout.SOUTH);
-            if (content != null) {
-                content.setBackground(GUI.COLOR_MAIN);
-                add(content, BorderLayout.CENTER);
-            }
-            JPanel north = new JPanel();
-            north.setBackground(Color.RED);
-            north.setPreferredSize(new Dimension(700, 100));
-            add(north, BorderLayout.NORTH);
+
+        messageList = new MessagePanel();
+        var scroller = new JScrollPane(messageList, JScrollPane.VERTICAL_SCROLLBAR_ALWAYS, JScrollPane.HORIZONTAL_SCROLLBAR_NEVER);
+        scroller.setPreferredSize(new Dimension(WIDTH, GUI.HEIGHT));
+        scroller.getVerticalScrollBar().setUnitIncrement(20);
+        // scroller.setBackground(GUI.COLOR_MAIN);
+        scroller.setBorder(null);
+
+        var searchPanel = new JPanel();
+        searchPanel.setLayout(null);
+
+        searchField = new JTextField();
+        searchField.setToolTipText("Search for messages");
+        searchField.setFont(GUI.P_MONO);
+        searchField.setBounds(10, 30, 630, 40);
+        searchField.setBackground(textInputColor);
+        searchField.setForeground(new Color(0xFFFFFF));
+        searchField.setCaretColor(new Color(0xFFFFFF));
+        searchField.setBorder(null);
+
+        searchButton = new JButton(new ImageIcon("images\\search 32.png"));
+        searchButton.setBounds(640, 30, 32, 40);
+        searchButton.setBackground(textInputColor);
+        searchButton.setBorder(null);
+        
+        searchPanel.add(searchField);
+        searchPanel.add(searchButton);
+        searchPanel.setPreferredSize(new Dimension(650, 100));
+        searchPanel.setBackground(GUI.COLOR_MAIN);
+        searchPanel.setBorder(BorderFactory.createDashedBorder(GUI.COLOR_LIST, 3, 2, 1, false));
+
+        assert (getLayout() instanceof BorderLayout);
+
+        add(textInputer, BorderLayout.SOUTH);
+        add(scroller, BorderLayout.CENTER);
+        add(searchPanel, BorderLayout.NORTH);
+    }
+
+    class MessagePanel extends JPanel {
+        int numMessages = 0;
+        MessagePanel() {
+            setLayout(null);
+            setBackground(GUI.COLOR_MAIN);
+            resize();
         }
-        else add(textInputer);
+        private void resize() {
+            setPreferredSize(new Dimension(650, numMessages * 50 + 100));
+        }
+        void enplace() {
+            ++numMessages;
+            resize();
+        }
+    }
+
+    public void addMessage(Sentence sentence) {
+        sentence.setY(messageList.numMessages);
+        messageList.add(sentence.getPanel());
+        messageList.enplace();
     }
 }
