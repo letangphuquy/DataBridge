@@ -34,6 +34,7 @@ public class Client extends E2ESocket {
     ArrayList<String> requests = new ArrayList<>();
     ArrayList<Thread> independentThreads = new ArrayList<>();
     JFrame currentFrame = null;
+    JFrame chatFrame = null, driveFrame = null, profileFrame = null;
 
     private Client(Socket socket) {
         super(socket, false);
@@ -54,7 +55,7 @@ public class Client extends E2ESocket {
         send(msg + Constants.DELIMITER + String.valueOf(requests.size()));
         requests.add(msg);
     }
-    
+
     Thread serverListener = new Thread(new Runnable() {
         //How to stop listening when logout?
         //https://docs.oracle.com/javase/1.5.0/docs/guide/misc/threadPrimitiveDeprecation.html

@@ -5,8 +5,10 @@ import java.util.HashSet;
 import java.util.function.BiFunction;
 
 import Model.DFile;
+import Model.FileLink;
 import Model.Group;
 import Model.Message;
+import Model.NormalMessage;
 import Model.Recipient;
 import Model.UserPair;
 import Rules.Relationship;
@@ -72,6 +74,13 @@ public class HeapDataManager {
 
     public static void addMessage(Message message, boolean addRecipient) {
         Data.messages.put(message.getMessageID(), message);
+        if (message instanceof NormalMessage || message instanceof FileLink) {
+            Data.messagesFrom.compute(message.getSenderID(), (uid, messagesList) -> {
+                if (messagesList == null) messagesList = new ArrayList<Message>();
+                messagesList.add(message);
+                return messagesList;
+            });
+        }
         long receiverID = message.getReceiverID();
         if (addRecipient) {
             Data.recipients.compute(receiverID, (Long id, Recipient recipient) -> {

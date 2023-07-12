@@ -20,6 +20,11 @@ public class FileLink extends Message {
     public String getFileID() {
         return fileID;
     }
+
+    @Override
+    public Message makeCopy() {
+        return new FileLink(this, fileID);
+    }
     
     @Override
     public String toString() {

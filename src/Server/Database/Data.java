@@ -53,6 +53,7 @@ public class Data {
     public static HashMap<Long, HashSet<Long>> friendsOf = new HashMap<>();
     public static HashMap<Long, HashSet<Long>> groupsOf = new HashMap<>();
     public static HashMap<Long, HashSet<String>> filesOf = new HashMap<>();
+    public static HashMap<Long, ArrayList<Message>> messagesFrom = new HashMap<>();
 
     public static String[] getColumnsOf(String tableName) {
         if (!columnsOf.containsKey(tableName)) {

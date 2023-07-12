@@ -1,5 +1,6 @@
 package Client;
 
+import java.awt.Window;
 import java.awt.event.*;
 
 import javax.swing.JOptionPane;
@@ -16,23 +17,44 @@ public class Controllers {
     public static class MenuController {
         private MenuController() {}
         
+        static void changeFrame(String frameName) {
+            System.out.println("Changing to the " + frameName + " frame");
+            if ("chat".equalsIgnoreCase(frameName)) {
+                if (instance.chatFrame == null) 
+                    instance.chatFrame = new ChatView();
+                instance.changeFrame(instance.chatFrame);
+            } else
+            if ("drive".equalsIgnoreCase(frameName)) {
+                if (instance.driveFrame == null) 
+                    instance.driveFrame = new DriveView();
+                instance.changeFrame(instance.driveFrame);
+            } else
+            if ("profile".equalsIgnoreCase(frameName)) {
+                if (instance.profileFrame == null) 
+                    instance.profileFrame = new ProfileView();
+                instance.changeFrame(instance.profileFrame);
+            } else {
+                System.out.println("Invalid frame name: " + frameName);
+            }
+        }
+
         public static void addMenuController(MenuPanel menu) {
             menu.driveButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    instance.changeFrame(new DriveView());
+                    changeFrame("drive");
                 }
             });
             menu.chatButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    instance.changeFrame(new ChatView());
+                    changeFrame("chat");
                 }
             });
             menu.profileButton.addMouseListener(new MouseAdapter() {
                 @Override
                 public void mouseClicked(MouseEvent e) {
-                    instance.changeFrame(new ProfileView());
+                    changeFrame("profile");
                 }
             });
         }
@@ -56,7 +78,7 @@ public class Controllers {
                     try {
                         if (checkValid() && Authenticator.login(gui.getUsername(), gui.getPassword())) {
                             System.out.println("Logged in successfully");
-                            instance.changeFrame(new ChatView());
+                            MenuController.changeFrame("chat");
                             ChatController.initialize();
                         }
                     } catch (Exception e) {}
@@ -68,7 +90,7 @@ public class Controllers {
                     try {
                         if (checkValid() && Authenticator.register(gui.getUsername(), gui.getPassword())) {
                             System.out.println("Registered and logged in successfully");
-                            instance.changeFrame(new ChatView());
+                            MenuController.changeFrame("chat");
                             ChatController.initialize();
                         }
                     } catch (Exception e) {}
@@ -79,10 +101,16 @@ public class Controllers {
 
     public static class ChatController {
         private ChatController() {}
-        // private static final ChatView gui = (ChatView) instance.currentFrame;
+        private static final ChatView gui = (ChatView) instance.currentFrame;
 
         public static void initialize() {
-            
+            for (var conv : Data.conversations.values()) {
+                gui.addDialouge(conv);
+                for (var message : conv.getMessages()) {
+                    gui.addMessage(conv, message);
+                }
+            }
+            gui.changeDialouge(0);
         }
     }
 
@@ -91,6 +119,9 @@ public class Controllers {
         public static WindowAdapter closeWindow = new WindowAdapter() {
             @Override
             public void windowClosing(WindowEvent e) {
+                var frame = (Window) e.getSource();
+                frame.setVisible(false);
+                frame.dispose();
                 instance.terminate();
             }
         };

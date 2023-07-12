@@ -56,6 +56,10 @@ public class Recipient implements DatabaseModel {
 		return this;
 	}
 
+	public void sortMessages() {
+		messages.sort((a, b) -> (int) (a.getMessageID() - b.getMessageID()));
+	}
+
 	public ArrayList<Message> getMessages() {
 		return messages;
 	}

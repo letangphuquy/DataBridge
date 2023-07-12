@@ -14,8 +14,13 @@ import Server.Database.Data;
 import Server.Database.DatabaseInserter;
 public class Authenticator {
     private Authenticator() {}
+    private static void addMessage(ArrayList<Message> list, Message message) {
+        var temp = message.makeCopy();
+        Messenger.setPublicID(temp);
+        list.add(temp);
+    }
+
     private static void onLogin(ServerThread server, User user) throws IOException {
-        //TODO: send user data
         server.user = user;
         long userID = user.getUserID();
         ServerThread.activeUsers.put(userID, server);
@@ -33,22 +38,30 @@ public class Authenticator {
         int groupsCount = groupsList == null ? 0 : groupsList.size();
         server.send(ServerCode.DATA + " GROUPS " + groupsCount);
         if (groupsCount > 0)
-            for (long groupID : groupsList)
-                server.send(Data.groups.get(groupID).toString());
+            for (long groupID : groupsList) {
+                var group = Data.groups.get(groupID);
+                server.send(group.toString());
+            }
 
-        groupsList.add(userID);
         ArrayList<Message> messages = new ArrayList<>();
         for (long groupID : groupsList) {
-            for (var message : Data.recipients.get(groupID).getMessages()) {
-                //NOTE: send publicID instead of recipientID (important!)
-                message.setSenderID(Data.recipientIDToPublicID.get(message.getSenderID()));
-                message.setReceiverID(Data.recipientIDToPublicID.get(message.getReceiverID()));
-                messages.add(message); //already is a sub class instance
-            }
+            for (var message : Data.recipients.get(groupID).getMessages())
+                if (userID != message.getSenderID())
+                    addMessage(messages, message);
         }
+        for (var message : Data.recipients.get(userID).getMessages()) {
+            addMessage(messages, message);
+        }
+        var sentMessages = Data.messagesFrom.get(userID);
+        if (sentMessages != null)
+            for (var message : sentMessages) 
+                addMessage(messages, message);
+        System.out.println("Got all messages");
         server.send(ServerCode.DATA + " MESSAGES " + messages.size());
-        for (var message : messages)
+        for (var message : messages) {
+            System.out.println("Sending message: " + message);
             server.send(message.toString());
+        }
     }
 
     /*

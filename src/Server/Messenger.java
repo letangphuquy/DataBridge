@@ -123,4 +123,13 @@ public class Messenger {
             return (recipientID == userID);
         return Data.groups.get(recipientID) .hasMember(userID);
     }
+    
+    public static void setPublicID(Message message) {
+        message.setSenderID(Data.recipientIDToPublicID.get(
+            message.getSenderID()
+        ));
+        message.setReceiverID(Data.recipientIDToPublicID.get(
+            message.getReceiverID()
+        ));
+    }
 }

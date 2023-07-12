@@ -101,6 +101,7 @@ public class DatabaseLoader {
         for (var args : result) {
             long groupID = Long.parseLong(args[0]);
             long userID = Long.parseLong(args[1]);
+            System.out.println("Group " + Data.groups.get(groupID) + " has member " + Data.users.get(userID));
             HeapDataManager.addGroupMember(groupID, userID);
         }
 
@@ -161,8 +162,10 @@ public class DatabaseLoader {
 
     static void loadMessages() throws SQLException {
         var result = loadDatabaseWithOrder("Messages", new String[]{"sent_at"});
+        System.out.println("There are " + result.size() + " messages in the database");
         for (var args : result) {
             Message message = new Message(args);
+            System.out.println("Message " + message.getMessageID() + " has sender " + message.getSenderID());
             HeapDataManager.addMessage(message, false);
             Data.messageID = Math.max(Data.messageID, message.getMessageID());
         }

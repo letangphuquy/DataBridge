@@ -17,6 +17,15 @@ public class NormalMessage extends Message {
         this.content = content;
     }
 
+    public String getContent() {
+        return content;
+    }
+
+    @Override
+    public Message makeCopy() {
+        return new NormalMessage(this, content);
+    }
+
     @Override
     public String toString() {
         return super.toString() + Constants.DELIMITER + content;

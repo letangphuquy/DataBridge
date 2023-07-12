@@ -24,6 +24,13 @@ public class Group extends Recipient {
         this.name = args[1];
     }
 
+    public static Group parse(String[] data) { // for Client
+		Group group = new Group(data);
+		long publicID = Long.parseLong(data[0]);
+		group.setIDs(publicID, publicID);
+		return group;
+	}
+
     public Group addMember(User user) {
         members.add(user);
         memberIDs.add(user.getUserID());

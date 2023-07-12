@@ -64,6 +64,10 @@ public class Message implements DatabaseModel {
         this.receiverID = receiverID;
     }
 
+    public Message makeCopy() {
+        return new Message(this);
+    }
+
     @Override
     public String toString() {
         return String.join(Constants.DELIMITER, new String[] {String.valueOf(messageID), String.valueOf(senderID), String.valueOf(receiverID), String.valueOf(isFile), sendTime.toString()});

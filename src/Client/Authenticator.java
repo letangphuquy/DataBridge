@@ -7,6 +7,7 @@ import javax.swing.JOptionPane;
 import Model.Group;
 import Model.Message;
 import Model.PasswordHasher;
+import Model.Recipient;
 import Model.User;
 import Rules.ClientCode;
 import Rules.Constants;
@@ -43,8 +44,10 @@ public class Authenticator {
         for (int i = 0; i < friendsCount; i++) {
             response = client.read();
             parts = response.split(D);
-            User friend = new User(parts);
-            friend.setIDs(Constants.DEFAULT_ID, Long.parseLong(parts[0]));
+            User friend = User.parse(parts);
+            friend.setIDs(friend.getUserID(), friend.getUserID());
+            Data.users.put(friend.getPublicID(), friend);
+            Data.conversations.put(friend.getPublicID(), friend);
             System.out.println("Friend: " + friend);
         }
 
@@ -55,7 +58,9 @@ public class Authenticator {
         for (int i = 0; i < groupsCount; i++) {
             response = client.read();
             parts = response.split(D);
-            Group group = new Group(parts);
+            Group group = Group.parse(parts);
+
+            Data.conversations.put(group.getGroupID(), group);
             System.out.println("Group: " + group);
         }
 
@@ -63,12 +68,30 @@ public class Authenticator {
         assert response.startsWith(ServerCode.DATA + " MESSAGES");
         parts = response.split(" ");
         int messagesCount = Integer.parseInt(parts[2]);
+        System.out.println("Messages count: " + messagesCount);
         for (int i = 0; i < messagesCount; i++) {
             response = client.read();
             parts = response.split(D);
             Message message = Message.parse(parts);
+            var dialougeID = Messenger.getDialougeID(message);
+            Data.conversations.compute(dialougeID, (id, conversation) -> {
+                if (conversation == null) conversation = new Recipient(dialougeID, dialougeID, 'U');
+                return conversation.addMessage(message);
+            });
             System.out.println("Message: " + message);
         }
+        System.out.println("HERE");
+        var dialougeIDs = Data.conversations.keySet();
+        if (dialougeIDs != null)
+            for (var dialougeID : dialougeIDs) {
+                System.out.println("Sorting messages for " + dialougeID);
+                Data.conversations.compute(dialougeID, (id, conversation) -> {
+                    if (conversation != null)
+                        conversation.sortMessages();
+                    return conversation;
+                });
+            }
+        System.out.println("USER DATA RECEIVED");
         client.serverListener.start();
     }
 
