@@ -67,7 +67,9 @@ public class LoadTestClient implements Runnable {
                 try {
                     // Send test message
                     long sendTime = System.currentTimeMillis();
-                    String message = "CLIENT_" + clientId + "_MSG_" + i;
+                    StringBuilder msgBuilder = new StringBuilder();
+                    msgBuilder.append("CLIENT_").append(clientId).append("_MSG_").append(i);
+                    String message = msgBuilder.toString();
                     out.write(message);
                     out.newLine();
                     out.flush();

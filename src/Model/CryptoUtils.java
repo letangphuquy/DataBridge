@@ -197,13 +197,27 @@ public class CryptoUtils {
      * Convert hexadecimal string to bytes
      * @param hex the hex string
      * @return bytes representation
+     * @throws IllegalArgumentException if hex string contains invalid characters
      */
     public static byte[] hexToBytes(String hex) {
+        if (hex == null || hex.isEmpty()) {
+            throw new IllegalArgumentException("Hex string cannot be null or empty");
+        }
+        if (hex.length() % 2 != 0) {
+            throw new IllegalArgumentException("Hex string must have even length");
+        }
+        
         int len = hex.length();
         byte[] data = new byte[len / 2];
         for (int i = 0; i < len; i += 2) {
-            data[i / 2] = (byte) ((Character.digit(hex.charAt(i), 16) << 4)
-                                 + Character.digit(hex.charAt(i + 1), 16));
+            int highDigit = Character.digit(hex.charAt(i), 16);
+            int lowDigit = Character.digit(hex.charAt(i + 1), 16);
+            
+            if (highDigit == -1 || lowDigit == -1) {
+                throw new IllegalArgumentException("Invalid hex character at position " + i);
+            }
+            
+            data[i / 2] = (byte) ((highDigit << 4) + lowDigit);
         }
         return data;
     }

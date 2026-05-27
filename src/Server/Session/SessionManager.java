@@ -113,16 +113,24 @@ public class SessionManager {
     /**
      * Clean up idle or closed sessions
      * Safe to call periodically to reclaim resources
+     * Uses a safe iteration pattern to handle concurrent modifications
      * @param idleTimeoutMs idle timeout in milliseconds
      * @return number of sessions cleaned up
      */
     public int cleanupIdleSessions(long idleTimeoutMs) {
-        int cleaned = 0;
+        // Collect sessions to remove first to avoid concurrent modification
+        java.util.List<Long> sessionsToRemove = new java.util.ArrayList<>();
         for (Session session : sessions.values()) {
             if (session.getIdleTimeMs() > idleTimeoutMs || !session.isConnected()) {
-                if (sessions.remove(session.getSessionId()) != null) {
-                    cleaned++;
-                }
+                sessionsToRemove.add(session.getSessionId());
+            }
+        }
+        
+        // Remove collected sessions
+        int cleaned = 0;
+        for (Long sessionId : sessionsToRemove) {
+            if (sessions.remove(sessionId) != null) {
+                cleaned++;
             }
         }
         return cleaned;

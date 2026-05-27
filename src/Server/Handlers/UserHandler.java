@@ -23,23 +23,27 @@ public class UserHandler implements PacketHandler {
     
     @Override
     public void handle(Session session, String command, String[] args) throws Exception {
-        ClientCode.Command cmd = ClientCode.Command.valueOf(command);
-        
-        switch (cmd) {
-            case SEARCH:
-                handleSearch(session, args);
-                break;
-            case VIEW:
-                handleView(session, args);
-                break;
-            case EDIT:
-                handleEdit(session, args);
-                break;
-            case FRIEND:
-                handleFriend(session, args);
-                break;
-            default:
-                throw new IllegalArgumentException("Unknown USER command: " + command);
+        try {
+            ClientCode.Command cmd = ClientCode.Command.valueOf(command);
+            
+            switch (cmd) {
+                case SEARCH:
+                    handleSearch(session, args);
+                    break;
+                case VIEW:
+                    handleView(session, args);
+                    break;
+                case EDIT:
+                    handleEdit(session, args);
+                    break;
+                case FRIEND:
+                    handleFriend(session, args);
+                    break;
+                default:
+                    throw new IllegalArgumentException("Unknown USER command: " + command);
+            }
+        } catch (IllegalArgumentException e) {
+            throw new IllegalArgumentException("Invalid or unknown USER command: '" + command + "'", e);
         }
     }
     
